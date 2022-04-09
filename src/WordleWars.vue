@@ -226,9 +226,9 @@ function createEmojiScore (successGrid: string) {
 
       <div v-if="gameState === GameState.INTRO" id="intro">
         <div>
-          <h2>Adınızı girin</h2>
+          <h2>İsminizi alalım</h2>
           <form @submit.prevent="enterWaitingRoom">
-            <label for="set-username">Kullanıcı adı</label>
+            <label for="set-username">Oyuncu ismi</label>
             <input type="text" id="set-username" v-model="username" autocomplete="off" required />
             <button class="ready-button">Oyuna katıl</Button>
           </form>
