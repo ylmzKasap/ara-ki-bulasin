@@ -122,7 +122,7 @@ function completeRow () {
       setTimeout(() => {
         grid = genResultGrid()
         showMessage(
-          ['Dahi', 'Muhteşem', 'Etkileyici', 'Fevkalade', 'Fecaat', 'Dehşetengiz'][
+          ['Devenin bale pabucu!', 'Yok devenin nalı!', 'Süper sonik', 'Fecaat', 'Dehşet', 'Dehşetengiz'][
             currentRowIndex
           ],
           -1
@@ -199,7 +199,7 @@ function genResultGrid () {
           {{ message }}
         </div>
         <div v-if="success">
-          Diğer oyuncuların bitirmesi bekleniyor...
+          Diğer amatörler bekleniyor...
         </div>
       </div>
       <div class="board-left">
