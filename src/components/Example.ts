@@ -1,6 +1,6 @@
 export const info = {
   hide: false,
-  title: 'Wordle Kapışması',
+  title: 'ARA Kİ BULASIN',
   description: 'u Wordle klonunu başkalarıyla canlı oynamak için bağlantıyı paylaşın. Kendinize karşı denemek için yeni bir pencerede açın.',
   githubHref: 'https://github.com/CTNicholas/wordle-wars',
   codeSandboxHref: '',

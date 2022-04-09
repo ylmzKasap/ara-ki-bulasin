@@ -65,55 +65,47 @@ function toggleInfoOpen () {
         </button>
       </h2>
       <p>
-        <strong>WORDLE WARS</strong> was built by <a class="link" href="https://twitter.com/ctnicholasdev">@ctnicholasdev</a>.
-        It's open-source and available on <a class="link" href="https://github.com/ylmzKasap/ara-ki-bulasin">GitHub</a>, be creative!
-      </p>
-      <p>
-        Wordle Wars uses <a class="link" href="https://liveblocks.io/">Liveblocks</a> to add multiplayer, which I wholeheartedly recommend trying.
-        Give me a tag if you build anything fun.
-      </p>
-      <p>
-        I also write interactive web dev articles on my website: <a class="link" href="https://ctnicholas.dev">ctnicholas.dev</a>
+        <strong>WORDLE WARS</strong> <a class="link" href="https://twitter.com/ctnicholasdev">@ctnicholasdev</a> tarafından oluşturulmuştur.
       </p>
       <div class="divider" />
-      <h2 class="mt-6">How to play</h2>
+      <h2 class="mt-6"></h2>
       <p>
-        Guess the <strong>WORDLE</strong> in six tries.
+        Günün kelimesini 6 denemede tahmin etmelisiniz.
       </p>
       <p>
-        Each guess must be a valid five-letter word. Hit the enter button to submit.
+        Her tahmin 5 harfli, geçerli bir kelime olmalıdır. Enter tuşuna basarak kelimeyi girin.
       </p>
       <p>
-        After each guess, the color of the tiles will change to show how close your guess was to the word.
+        Her tahminden sonra kutuların rengi değişerek doğru kelimeye ne kadar yaklaştığınızı gösterecek.
       </p>
       <p>
-        The player with the lowest amount of guesses wins <strong>WORDLE WARS</strong>.
+        Doğru kelimeyi en az tahminde bulan kişi oyunu kazanır.
       </p>
       <div class="divider" />
       <p>
-        <strong>Examples</strong>
+        <strong>Örnekler</strong>
       </p>
       <div class="example">
         <p>
           <MiniBoard :large="true" :showLetters="true" :user="{ board: messages.relay }" :rows="messages.relay.length" />
         </p>
-        <p>The letter <strong>R</strong> is in the word and in the correct spot.</p>
+        <p>Kelimede <strong>A</strong> harfi mevcut ve doğru yerde.</p>
       </div>
       <div class="example">
         <p>
           <MiniBoard :large="true" :showLetters="true" :user="{ board: messages.happy }" :rows="messages.happy.length" />
         </p>
-        <p>The letter <strong>A</strong> is in the word but in the wrong spot.</p>
+        <p>Kelimede <strong>Ü</strong> harfi mevcut ama yanlış yerde.</p>
       </div>
       <div class="example">
         <p>
           <MiniBoard :large="true" :showLetters="true" :user="{ board: messages.minds }" :rows="messages.minds.length" />
         </p>
-        <p>No letters are in the word in any spot.</p>
+        <p>Kelimede harflerin hiçbiri yok.</p>
       </div>
       <div class="divider" />
       <p>
-        <strong>A new WORDLE will be available each day!</strong>
+        <em>Her gün bir kelime, öyle fazla şey yapmayın.</em>
       </p>
 
     </div>

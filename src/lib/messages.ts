@@ -4,55 +4,48 @@ function wordToBoard (word: string, state: string = 'correct') {
 
 const enterYourName = [
   [
-    { letter: 'e', state: 'correct' },
-    { letter: 'n', state: 'correct' },
-    { letter: 't', state: 'correct' },
-    { letter: 'e', state: 'correct' },
-    { letter: 'r', state: 'correct' }
-  ],
-  [
-    { letter: 'y', state: 'present' },
-    { letter: 'o', state: 'present' },
-    { letter: 'u', state: 'present' },
-    { letter: 'r', state: 'present' },
-    { letter: '', state: 'absent' },
-  ],
-  [
-    { letter: '', state: 'absent' },
-    { letter: 'n', state: 'correct' },
-    { letter: 'a', state: 'correct' },
+    { letter: 'i', state: 'correct' },
+    { letter: 's', state: 'correct' },
+    { letter: 'i', state: 'correct' },
     { letter: 'm', state: 'correct' },
-    { letter: 'e', state: 'correct' },
+    { letter: '', state: 'absent' }
+  ],
+  [
+    { letter: 'g', state: 'absent' },
+    { letter: 'i', state: 'correct' },
+    { letter: 'r', state: 'correct' },
+    { letter: 'i', state: 'correct' },
+    { letter: 'n', state: 'correct' },
   ]
 ]
 
 const relay = [
   [
-    { letter: 'a', state: 'correct' },
-    { letter: 'b', state: 'absent' },
-    { letter: 'o', state: 'absent' },
-    { letter: 'n', state: 'absent' },
-    { letter: 'e', state: 'absent' }
+    { letter: 'u', state: 'absent' },
+    { letter: 'l', state: 'absent' },
+    { letter: 't', state: 'absent' },
+    { letter: 'r', state: 'absent' },
+    { letter: 'a', state: 'correct' }
   ],
 ]
 
 const happy = [
   [
-    { letter: 'g', state: 'absent' },
-    { letter: 'i', state: 'present' },
-    { letter: 'z', state: 'absent' },
+    { letter: 's', state: 'absent' },
+    { letter: 'ü', state: 'present' },
+    { letter: 'p', state: 'absent' },
     { letter: 'e', state: 'absent' },
-    { letter: 'm', state: 'absent' }
+    { letter: 'r', state: 'absent' }
   ],
 ]
 
 const minds = [
   [
-    { letter: 'f', state: 'absent' },
-    { letter: 'a', state: 'absent' },
-    { letter: 'l', state: 'absent' },
-    { letter: 'e', state: 'absent' },
-    { letter: 'z', state: 'absent' }
+    { letter: 's', state: 'absent' },
+    { letter: 'o', state: 'absent' },
+    { letter: 'n', state: 'absent' },
+    { letter: 'i', state: 'absent' },
+    { letter: 'k', state: 'absent' }
   ],
 ]
 

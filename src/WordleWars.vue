@@ -298,7 +298,7 @@ function createEmojiScore (successGrid: string) {
         <div v-if="gameState === GameState.SCORES" id="scores">
           <div>
             <h2>
-              <span>{{ answerDay }}. gün için nihai puanlar, <strong class="tracking-wider">{{ answer.toUpperCase() }}</strong></span>
+              <span>Doğru cevap: <strong class="tracking-wider">{{ answer.toUpperCase().replace('I', 'İ') }}</strong></span>
             </h2>
             <div class="divider" />
             <div class="scores-grid">
@@ -309,7 +309,7 @@ function createEmojiScore (successGrid: string) {
             </button>
             <div class="divider" />
             <div class="text-center mt-6">
-              Yeni bir Wordle Kapışması için yarın tekrar gelin!
+              Bugünlük bu kadar. Bay bay!
             </div>
 
           </div>

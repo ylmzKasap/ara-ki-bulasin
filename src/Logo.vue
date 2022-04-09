@@ -1,6 +1,6 @@
 <template>
   <h1>
-    Wordle Kapışması
+    ARA Kİ BULASIN
   </h1>
 </template>
 
@@ -9,7 +9,7 @@ h1 {
   text-transform: uppercase;
   letter-spacing: 1.5px;
   margin: 4px 0;
-  font-size: 36px;
+  font-size: 22px;
   font-weight: 700;
   white-space: nowrap;
   overflow-x: hidden;
