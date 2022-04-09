@@ -1,6 +1,6 @@
 <template>
   <h1>
-    Wordle Wars
+    Wordle Kapışması
   </h1>
 </template>
 

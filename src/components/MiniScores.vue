@@ -21,10 +21,10 @@ const { sortedUsers, shrink = false } = defineProps<{
     </div>
     <div :class="['mini-score-mobile', shrink && 'shrink']">
       <span v-if="sortedUsers[0].score.correct === 5">
-        <span class="mini-score-name">{{ sortedUsers[0].name }}</span> has finished!
+        <span class="mini-score-name">{{ sortedUsers[0].name }}</span> cevabı buldu!
       </span>
       <span v-else>
-        <span class="mini-score-name">{{ sortedUsers[0].name }}</span> is leading with
+        <span class="mini-score-name">{{ sortedUsers[0].name }}</span> önde gidiyor
       </span>
       <ScoreCard :user="sortedUsers[0]" />
     </div>
