@@ -67,10 +67,10 @@ function toggleInfoOpen () {
       <p>
         <strong>WORDLE WARS</strong> <a class="link" href="https://twitter.com/ctnicholasdev">@ctnicholasdev</a> tarafından oluşturulmuştur.
       </p>
-      <p>Bu versiyon büyük çoğunlukla Türk Dil Kurumu sözlüğünden seçilmiş 6000 olası kelime
-        ve bu kelimeler arasından %100 alın teriyle seçilmiş yaklaşık 1600 olası doğru cevaptan oluşur.</p>
+      <p>Bu versiyon büyük çoğunlukla Türk Dil Kurumu sözlüğünden seçilmiş 5500 olası kelime
+        ve bu kelimeler arasından %100 alın teriyle seçilmiş yaklaşık 1700 olası doğru cevaptan oluşur.</p>
       <div class="divider" />
-      <h2 class="mt-6"></h2>
+      <h2 class="mt-6">Nasıl oynuyoruz?</h2>
       <p>
         Günün kelimesini 6 denemede tahmin etmelisiniz.
       </p>
