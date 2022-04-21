@@ -299,7 +299,7 @@ function createEmojiScore (successGrid: string) {
         <div v-if="gameState === GameState.SCORES" id="scores">
           <div>
             <h2>
-              <span>Doğru cevap: <strong class="tracking-wider">{{ answer.toUpperCase().replace('I', 'İ') }}</strong></span>
+              <span>Doğru cevap: <strong class="tracking-wider">{{ answer.toLocaleUpperCase('TR') }}</strong></span>
             </h2>
             <div class="divider" />
             <div class="scores-grid">
