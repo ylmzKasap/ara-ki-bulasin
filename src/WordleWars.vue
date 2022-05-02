@@ -199,8 +199,7 @@ function onGameComplete ({ success, successGrid }: GameCompleteProps) {
 
 // Copy link on click button
 function onCopyLink () {
-  copyUrlToClipboard()
-  copyLinkMessage = 'Kopyalandı'
+  copyLinkMessage = copyUrlToClipboard()
   setTimeout(() => copyLinkMessage = '', 1400)
 }
 
