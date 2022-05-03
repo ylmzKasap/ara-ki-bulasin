@@ -350,57 +350,9 @@ function createEmojiScore (successGrid: string) {
   min-height: 100%;
 }
 
-@keyframes drugs {
-	25% {
-		background-color: rgb(31, 221, 255, 0.7);
-	}
-	50% {
-		background-color: #ffff00;
-	}
-	75% {
-		background-color: rgb(250, 87, 101, 0.7);
-	}
-	100% {
-		background-color: black;
-	}
-}
-
-@keyframes slowDrugs {
-  0% {
-    background-color: black;
-    color: white;
-  }
-	60% {
-		background-color: white;
-    color: black;
-	}
-	100% {
-		background-color: black;
-    color: white;
-	}
-}
-
-@keyframes roll_it {
-	50% {
-		transform: rotate(180deg);
-	}
-	100% {
-		transform: rotate(359deg);
-	}
-}
-
 #connecting, #intro, #waiting {
   font-size: 18px;
-  animation-iteration-count: infinite;
-  animation-name: drugs;
-  animation-duration: 1s;
-}
-
-#playing {
-  animation-iteration-count: infinite;
-  animation-name: slowDrugs;
-  animation-duration: 5s;
-  animation-timing-function: linear;
+  background: #eff5f0;
 }
 
 .dark #connecting, .dark #intro, .dark #waiting, .dark #scores {
@@ -423,10 +375,6 @@ function createEmojiScore (successGrid: string) {
   display: flex;
   align-items: center;
   flex-direction: column;
-  animation-iteration-count: infinite;
-  animation-name: roll_it;
-  animation-timing-function: linear;
-  animation-duration: 10s;
 }
 
 .dark #intro > div, .dark #waiting > div {
