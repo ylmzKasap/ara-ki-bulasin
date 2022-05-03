@@ -36,7 +36,9 @@ let startAnimation = $ref(false)
 let confettiAnimation = $ref(false)
 let emojiScore = $ref('')
 let copyLinkMessage = $ref('')
-let shareMessage = navigator.share ? 'Bağlantıyı paylaş' : 'Bağlantıyı kopyala'
+const shareSupported = navigator.share !== undefined
+let clicked = $ref(false)
+let shareMessage = shareSupported ? 'Bağlantıyı paylaş' : 'Bağlantıyı kopyala'
 
 // Custom Liveblocks hooks, based on the Liveblocks React library
 const [myPresence, updateMyPresence] = useMyPresence()
@@ -201,7 +203,11 @@ function onGameComplete ({ success, successGrid }: GameCompleteProps) {
 // Copy link on click button
 function onCopyLink () {
   copyLinkMessage = copyUrlToClipboard()
-  setTimeout(() => copyLinkMessage = '', 1400)
+  clicked = true;
+  setTimeout(() => {
+    copyLinkMessage = '';
+    clicked = false;
+    }, 1400)
 }
 
 // Create emoji scores
@@ -234,9 +240,12 @@ function createEmojiScore (successGrid: string) {
           </form>
           <div class="divider" />
           <button class="copy-button" @click="onCopyLink" :disabled="!!copyLinkMessage">
-            {{ copyLinkMessage || shareMessage }} <svg xmlns="http://www.w3.org/2000/svg" class="inline -mt-0.5 ml-0.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" /><path d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v6h-4.586l1.293-1.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L10.414 13H15v3a2 2 0 01-2 2H5a2 2 0 01-2-2V5zM15 11h2a1 1 0 110 2h-2v-2z" /></svg>
+            {{ copyLinkMessage || shareMessage }}
+            <svg xmlns="http://www.w3.org/2000/svg" v-if="shareSupported && !clicked" class="inline share-icon -mt-0.5 ml-0.5 h-5 w-5" viewBox="0 0 576 512"><path d="M568.9 143.5l-150.9-138.2C404.8-6.773 384 3.039 384 21.84V96C241.2 97.63 128 126.1 128 260.6c0 54.3 35.2 108.1 74.08 136.2c12.14 8.781 29.42-2.238 24.94-16.46C186.7 252.2 256 224 384 223.1v74.2c0 18.82 20.84 28.59 34.02 16.51l150.9-138.2C578.4 167.8 578.4 152.2 568.9 143.5zM416 384c-17.67 0-32 14.33-32 32v31.1l-320-.0013V128h32c17.67 0 32-14.32 32-32S113.7 64 96 64H64C28.65 64 0 92.65 0 128v319.1c0 35.34 28.65 64 64 64l320-.0013c35.35 0 64-28.66 64-64V416C448 398.3 433.7 384 416 384z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" v-if="!shareSupported && !clicked" class="inline share-icon -mt-0.5 ml-0.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" /><path d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v6h-4.586l1.293-1.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L10.414 13H15v3a2 2 0 01-2 2H5a2 2 0 01-2-2V5zM15 11h2a1 1 0 110 2h-2v-2z" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" v-if="clicked" class="inline share-tick -mt-0.5 ml-0.5 h-5 w-5" viewBox="0 0 512 512"><path d="M0 256C0 114.6 114.6 0 256 0C397.4 0 512 114.6 512 256C512 397.4 397.4 512 256 512C114.6 512 0 397.4 0 256zM371.8 211.8C382.7 200.9 382.7 183.1 371.8 172.2C360.9 161.3 343.1 161.3 332.2 172.2L224 280.4L179.8 236.2C168.9 225.3 151.1 225.3 140.2 236.2C129.3 247.1 129.3 264.9 140.2 275.8L204.2 339.8C215.1 350.7 232.9 350.7 243.8 339.8L371.8 211.8z"/></svg>
           </button>
-          <div class="small-center-message">Oyun linkini kopyala ve önüne gelene gönder.</div>
+          <div class="small-center-message">Oyun linkini kopyala <br> ve önüne gelene gönder.</div>
           <div></div>
         </div>
       </div>
@@ -266,9 +275,12 @@ function createEmojiScore (successGrid: string) {
             </button>
             <div class="divider" />
             <button class="copy-button" @click="onCopyLink">
-              {{ copyLinkMessage || shareMessage }} <svg xmlns="http://www.w3.org/2000/svg" class="inline -mt-0.5 ml-0.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" /><path d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v6h-4.586l1.293-1.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L10.414 13H15v3a2 2 0 01-2 2H5a2 2 0 01-2-2V5zM15 11h2a1 1 0 110 2h-2v-2z" /></svg>
+              {{ copyLinkMessage || shareMessage }}
+              <svg xmlns="http://www.w3.org/2000/svg" v-if="shareSupported && !clicked" class="inline share-icon -mt-0.5 ml-0.5 h-5 w-5" viewBox="0 0 576 512"><path d="M568.9 143.5l-150.9-138.2C404.8-6.773 384 3.039 384 21.84V96C241.2 97.63 128 126.1 128 260.6c0 54.3 35.2 108.1 74.08 136.2c12.14 8.781 29.42-2.238 24.94-16.46C186.7 252.2 256 224 384 223.1v74.2c0 18.82 20.84 28.59 34.02 16.51l150.9-138.2C578.4 167.8 578.4 152.2 568.9 143.5zM416 384c-17.67 0-32 14.33-32 32v31.1l-320-.0013V128h32c17.67 0 32-14.32 32-32S113.7 64 96 64H64C28.65 64 0 92.65 0 128v319.1c0 35.34 28.65 64 64 64l320-.0013c35.35 0 64-28.66 64-64V416C448 398.3 433.7 384 416 384z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" v-if="!shareSupported && !clicked" class="inline share-icon -mt-0.5 ml-0.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" /><path d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v6h-4.586l1.293-1.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L10.414 13H15v3a2 2 0 01-2 2H5a2 2 0 01-2-2V5zM15 11h2a1 1 0 110 2h-2v-2z" /></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" v-if="clicked" class="inline share-tick -mt-0.5 ml-0.5 h-5 w-5" viewBox="0 0 512 512"><path d="M0 256C0 114.6 114.6 0 256 0C397.4 0 512 114.6 512 256C512 397.4 397.4 512 256 512C114.6 512 0 397.4 0 256zM371.8 211.8C382.7 200.9 382.7 183.1 371.8 172.2C360.9 161.3 343.1 161.3 332.2 172.2L224 280.4L179.8 236.2C168.9 225.3 151.1 225.3 140.2 236.2C129.3 247.1 129.3 264.9 140.2 275.8L204.2 339.8C215.1 350.7 232.9 350.7 243.8 339.8L371.8 211.8z"/></svg>
             </button>
-            <div class="small-center-message">Oyun linkini kopyala ve önüne gelene gönder.</div>
+            <div class="small-center-message">Oyun linkini kopyala <br> ve önüne gelene gönder.</div>
           </div>
 
           <div v-if="startAnimation" class="start-animation">
@@ -404,6 +416,14 @@ button:disabled {
 
 button:hover {
   background-color: #28c549;
+}
+
+.copy-button:hover {
+  background-color: #335fd9;
+}
+
+.ready-button:hover {
+  background-color: #298f3f;
 }
 
 button:active {
