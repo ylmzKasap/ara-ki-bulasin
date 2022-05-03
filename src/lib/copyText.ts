@@ -1,4 +1,5 @@
 export function copyUrlToClipboard () {
+  copyTextToClipboard(window.location.href);
   if (navigator.share) {
     navigator.share({
       title: 'Bağlantıyı Paylaş',
@@ -6,7 +7,6 @@ export function copyUrlToClipboard () {
     })
     return 'Paylaşılıyor';
   } else {
-    copyTextToClipboard(window.location.href);
     return 'Kopyalandı';
   }
 }
