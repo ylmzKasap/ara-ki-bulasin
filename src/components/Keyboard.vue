@@ -10,9 +10,9 @@ defineEmits<{
 }>()
 
 const rows = [
-  'ertyuıopğü'.split(''),
-  'asdfghjklşi'.split(''),
-  ['Enter', ...'zcvbnmöç'.split(''), 'Backspace']
+  'ERTYUIOPĞÜ'.split(''),
+  'ASDFGHJKLŞİ'.split(''),
+  ['Enter', ...'ZCVBNMÖÇ'.split(''), 'Backspace']
 ]
 </script>
 
@@ -25,7 +25,7 @@ const rows = [
         :class="['keyboard-button', key.length > 1 && 'big', letterStates[key]]"
         @click="$emit('key', key)"
       >
-        <span v-if="key !== 'Backspace'">{{ key.replace("i", "İ") }}</span>
+        <span v-if="key !== 'Backspace'">{{ key }}</span>
         <svg
           v-else
           xmlns="http://www.w3.org/2000/svg"
@@ -75,7 +75,6 @@ const rows = [
   display: flex;
   justify-content: center;
   align-items: center;
-  text-transform: uppercase;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0.3);
   transition: all 0.2s 1.5s;
 }
