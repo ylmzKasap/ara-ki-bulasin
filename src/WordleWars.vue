@@ -28,7 +28,7 @@ import { isMobile } from './lib/copyText'
 // SETUP
 
 // Get word of the day. Resets at UTC +00:00
-const { answer, answerDay } = getWordOfTheDay()
+const { answer } = getWordOfTheDay()
 
 // Current state of game, username, etc
 let gameState: GameState = $ref(GameState.CONNECTING)
@@ -213,7 +213,7 @@ function onCopyLink () {
 
 // Create emoji scores
 function createEmojiScore (successGrid: string) {
-  let resultString = `#Arayıp bulanlar #${answerDay}\n\n`
+  let resultString = `#Arayıp bulanlar \n\n`
   sortedUsers.forEach((user, index) => {
     resultString += `${index + 1}. ${user.name}\n`
   })
