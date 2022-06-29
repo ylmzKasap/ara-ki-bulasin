@@ -2,7 +2,7 @@ import { answers } from '../words'
 
 export function getWordOfTheDay () {
   /* if (import.meta.env.DEV) {
-    return { answer: 'sonik', answerDay: 1 }
+    return { answer: 'sonik' }
   } */
 
   const now = dateToUtc(new Date())
@@ -13,7 +13,7 @@ export function getWordOfTheDay () {
     day -= answers.length
   }
 
-  return { answer: answers[day], answerDay: day + 1 }
+  return { answer: answers[day] }
 }
 
 function dateToUtc (d: Date) {

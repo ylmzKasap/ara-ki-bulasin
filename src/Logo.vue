@@ -1,6 +1,6 @@
 <template>
   <h1>
-    ARA Kİ BULASIN
+    ARA Kİ BULASIN!
   </h1>
 </template>
 
