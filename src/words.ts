@@ -5504,7 +5504,8 @@ const allowedGuesses = [
   'şehri',
   'şıkır',
   'şırıl',
-  'ikona'
+  'ikona',
+  'nodül'
 ]
 
 export const answers = [
