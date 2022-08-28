@@ -5505,7 +5505,8 @@ const allowedGuesses = [
   'şıkır',
   'şırıl',
   'ikona',
-  'nodül'
+  'nodül',
+  'şınav'
 ]
 
 export const answers = [
@@ -5667,7 +5668,6 @@ export const answers = [
   'gurme',
   'mamak',
   'kakao',
-  ,
   'essah',
   'bronş',
   'afişe',

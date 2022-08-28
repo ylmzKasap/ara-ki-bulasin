@@ -269,10 +269,16 @@ function createEmojiScore (successGrid: string) {
                 {{ other.stage === GameState.READY ? 'Hazır' : other.stage === GameState.PLAYING ? 'Oyunda' : 'Bekliyor' }}
               </div>
             </div>
-            <button v-if="myPresence.stage !== GameState.READY" @click="updateGameStage(GameState.READY)" class="ready-button">
+            <button 
+              v-if="myPresence.stage !== GameState.READY"
+              @click="updateGameStage(GameState.READY)"
+              class="ready-button">
               Hazırım!
             </button>
-            <button v-else @click="updateGameStage(GameState.WAITING)" class="unready-button">
+            <button 
+              v-else
+              @click="updateGameStage(GameState.WAITING)"
+              class="unready-button">
               Hazır değilmişim...
             </button>
             <div class="divider" />
