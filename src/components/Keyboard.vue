@@ -25,7 +25,7 @@ const rows = [
         :class="['keyboard-button', key.length > 1 && 'big', letterStates[key]]"
         @click="$emit('key', key)"
       >
-        <span v-if="key !== 'Backspace'">{{ key.toLocaleUpperCase('tr') }}</span>
+        <span v-if="key !== 'Backspace'">{{ key.toLocaleUpperCase('tr-TR') }}</span>
         <svg
           v-else
           xmlns="http://www.w3.org/2000/svg"
