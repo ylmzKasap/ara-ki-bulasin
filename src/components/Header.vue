@@ -200,6 +200,20 @@ p {
   margin-top: 10px;
 }
 
+@keyframes drugs {
+  1% {
+    background-color: black;
+    color: white;
+  }
+	60% {
+		background-color: #ffff00;
+	}
+	99% {
+		background-color: black;
+    color: white;
+	}
+}
+
 header {
   height: 52px;
   display: flex;
@@ -211,6 +225,9 @@ header {
   text-align: center;
   background: #fff;
   padding: 1px 0;
+  animation-iteration-count: infinite;
+  animation-name: drugs;
+  animation-duration: 0.2s;
 }
 
 .dark header {
