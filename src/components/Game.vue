@@ -180,6 +180,7 @@ function genResultGrid () {
     })
     .join('\n')
 }
+
 </script>
 
 <template>

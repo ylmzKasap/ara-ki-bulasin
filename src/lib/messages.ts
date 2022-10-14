@@ -62,25 +62,25 @@ const fight = [
 
 const connecting = [
   [
-    { letter: 'n', state: 'correct' },
-    { letter: 'i', state: 'correct' },
-    { letter: 'h', state: 'absent' },
-    { letter: 'a', state: 'present' },
-    { letter: 'h', state: 'absent' }
+    { letter: '', state: 'absent' },
+    { letter: '', state: 'absent' },
+    { letter: '', state: 'absent' },
+    { letter: '', state: 'absent' },
+    { letter: '', state: 'absent' }
   ],
   [
-    { letter: 'a', state: 'present' },
-    { letter: 'h', state: 'absent' },
-    { letter: 'a', state: 'present' },
-    { letter: 'h', state: 'absent' },
-    { letter: 'a', state: 'present' },
+    { letter: '', state: 'absent' },
+    { letter: '', state: 'absent' },
+    { letter: '😥', state: 'absent' },
+    { letter: '', state: 'absent' },
+    { letter: '', state: 'absent' },
   ],
   [
-    { letter: 'h', state: 'absent' },
-    { letter: 'a', state: 'present' },
-    { letter: 'h', state: 'absent' },
-    { letter: 'a', state: 'present' },
-    { letter: 'h', state: 'absent' },
+    { letter: '', state: 'absent' },
+    { letter: '', state: 'absent' },
+    { letter: '', state: 'absent' },
+    { letter: '', state: 'absent' },
+    { letter: '', state: 'absent' },
   ]
 ]
 

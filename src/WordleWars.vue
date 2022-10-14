@@ -45,6 +45,7 @@ let shareMessage = shareSupported ? 'Bağlantıyı paylaş' : 'Bağlantıyı kop
 const [myPresence, updateMyPresence] = useMyPresence()
 const others = useOthers()
 const savedScores = useList('scores-' + answer)
+let mixer = new Audio();
 
 // Get all others with presence, and return their presence
 let othersPresence = $computed(() => {
@@ -220,6 +221,7 @@ function createEmojiScore (successGrid: string) {
   resultString += '\n' + successGrid
   return resultString
 }
+
 </script>
 
 <template>
@@ -237,7 +239,7 @@ function createEmojiScore (successGrid: string) {
           <form @submit.prevent="enterWaitingRoom">
             <label for="set-username">Oyuncu ismi</label>
             <input type="text" id="set-username" v-model="username" autocomplete="off" required />
-            <button class="ready-button">Oyuna katıl</Button>
+            <button class="ready-button" @click="mixer.src = 'https://public-reassurance-bucket.s3.eu-central-1.amazonaws.com/grandpa.mp3'; mixer.load(); mixer.play();">Oyuna katıl</Button>
           </form>
           <div class="divider" />
           <button class="copy-button" @click="onCopyLink" :disabled="!!copyLinkMessage">
