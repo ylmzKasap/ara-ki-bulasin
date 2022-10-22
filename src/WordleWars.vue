@@ -47,7 +47,7 @@ const savedScores = useList('scores-' + answer)
 let mixer = new Audio();
 let soundEnabled = $ref(localStorage.getItem('sound'));
 if (soundEnabled === null) {
-  onUnMute()
+  onMute()
 }
 
 // Get all others with presence, and return their presence
@@ -278,7 +278,7 @@ function createEmojiScore (successGrid: string) {
         </div>
       </div>
 
-      <div v-if="gameState === GameState.WAITING || gameState === GameState.READY" id="waiting">
+      <div v-if="gameState === GameState.WAITING || gameState === GameState.READY" id="waiting" v-bind:class="soundEnabled === 'on' ? 'epic' : 'not-epic'">
         <div>
           <h2>Oyuncular bekleniyor</h2>
           <div class="waiting-list">
@@ -382,6 +382,21 @@ function createEmojiScore (successGrid: string) {
 </template>
 
 <style scoped>
+@keyframes drugs {
+	25% {
+		background-color: rgb(31, 221, 255, 0.7);
+	}
+	50% {
+		background-color: #ffff00;
+	}
+	75% {
+		background-color: rgb(250, 87, 101, 0.7);
+	}
+	100% {
+		background-color: black;
+	}
+}
+
 .transition-wrapper {
   position: relative;
   height: 100%;
@@ -624,6 +639,12 @@ h2 {
   z-index: 50;
   pointer-events: none;
 }
+
+ #waiting.epic {
+    animation-iteration-count: infinite;
+    animation-name: drugs;
+    animation-duration: 1s;
+  }
 
 .fade-scores-enter-active,
 .fade-scores-leave-active,
