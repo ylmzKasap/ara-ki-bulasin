@@ -429,11 +429,14 @@ label {
 }
 
 .volume-icon {
-  cursor: pointer;
   display: flex;
   align-items: center;
   margin-top: 15px;
   justify-content: center;
+}
+
+.volume-icon > i {
+  cursor: pointer;
 }
 
 .volume-icon > i:hover {
