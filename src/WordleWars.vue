@@ -29,7 +29,6 @@ import { isMobile } from './lib/copyText'
 
 // Get word of the day. Resets at UTC +00:00
 const { answer } = getWordOfTheDay()
-
 // Current state of game, username, etc
 let gameState: GameState = $ref(GameState.CONNECTING)
 let username = $ref(localStorage.getItem('username') || '')
@@ -46,6 +45,10 @@ const [myPresence, updateMyPresence] = useMyPresence()
 const others = useOthers()
 const savedScores = useList('scores-' + answer)
 let mixer = new Audio();
+let soundEnabled = $ref(localStorage.getItem('sound'));
+if (soundEnabled === null) {
+  onUnMute()
+}
 
 // Get all others with presence, and return their presence
 let othersPresence = $computed(() => {
@@ -212,6 +215,27 @@ function onCopyLink () {
     }, 1400)
 }
 
+function playMusic () {
+  if (soundEnabled === 'on') {
+    mixer.src = 'https://public-reassurance-bucket.s3.eu-central-1.amazonaws.com/random.mp3';
+    mixer.load();
+    mixer.play();
+  }
+}
+
+function onMute () {
+  soundEnabled = 'off';
+  localStorage.setItem('sound', 'off');
+  mixer.pause();
+  mixer.currentTime = 0;
+}
+
+function onUnMute () {
+  soundEnabled = 'on';
+  localStorage.setItem('sound', 'on');
+  playMusic();
+}
+
 // Create emoji scores
 function createEmojiScore (successGrid: string) {
   let resultString = `#Arayıp bulanlar \n\n`
@@ -239,7 +263,7 @@ function createEmojiScore (successGrid: string) {
           <form @submit.prevent="enterWaitingRoom">
             <label for="set-username">Oyuncu ismi</label>
             <input type="text" id="set-username" v-model="username" autocomplete="off" required />
-            <button class="ready-button" @click="mixer.src = 'https://public-reassurance-bucket.s3.eu-central-1.amazonaws.com/grandpa.mp3'; mixer.load(); mixer.play();">Oyuna katıl</Button>
+            <button class="ready-button" @click="playMusic">Oyuna katıl</Button>
           </form>
           <div class="divider" />
           <button class="copy-button" @click="onCopyLink" :disabled="!!copyLinkMessage">
@@ -292,6 +316,12 @@ function createEmojiScore (successGrid: string) {
             </button>
             <div v-if="!shareSupported" class="small-center-message">Oyun linkini kopyala <br> ve önüne gelene gönder.</div>
             <div v-if="shareSupported" class="small-center-message">Oyun linkini <br> önüne gelenle paylaş.</div>
+            <div v-if="soundEnabled === 'on'" class="volume-icon">
+              <i class="fa-solid fa-volume-high" @click="onMute"></i>
+            </div>
+            <div v-if="soundEnabled === 'off'" class="volume-icon" @click="onUnMute">
+              <i class="fa-solid fa-volume-xmark"></i
+            ></div>
           </div>
 
           <div v-if="startAnimation" class="start-animation">
@@ -396,6 +426,23 @@ label {
   font-size: 16px;
   font-weight: 500;
   opacity: 0.6;
+}
+
+.volume-icon {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin-top: 15px;
+  justify-content: center;
+}
+
+.volume-icon > i:hover {
+  color: rgb(214, 51, 15);
+}
+
+.volume-icon > i:active {
+  transform: scale(0.95);
+  opacity: 0.8;
 }
 
 input {
