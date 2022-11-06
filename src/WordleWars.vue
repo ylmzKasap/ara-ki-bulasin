@@ -36,9 +36,12 @@ let startAnimation = $ref(false)
 let confettiAnimation = $ref(false)
 let emojiScore = $ref('')
 let copyLinkMessage = $ref('')
+let forceEntryError = $ref('')
+let fallingThroughChimney = $ref(false)
 let clicked = $ref(false)
 const shareSupported = navigator.share !== undefined && isMobile()
 let shareMessage = shareSupported ? 'Bağlantıyı paylaş' : 'Bağlantıyı kopyala'
+
 
 // Custom Liveblocks hooks, based on the Liveblocks React library
 const [myPresence, updateMyPresence] = useMyPresence()
@@ -215,6 +218,34 @@ function onCopyLink () {
     }, 1400)
 }
 
+// Function force entry
+function onForceEntry () {
+  if (forceEntryError) return;
+
+  let readyCount = 1;
+  let playerCount = othersPresence.length + 1;
+  for (let player of othersPresence) {
+    if (['ready', 'playing'].includes(player.stage)) {
+      readyCount += 1;
+    }
+  }
+  
+  if (readyCount / playerCount < 0.65) {
+    forceEntryError = 'Hele biraz bekle'
+    setTimeout(() => {
+      forceEntryError = ''
+    }, 2000)
+    return;
+  }
+  
+  fallingThroughChimney = true
+  startAnimation = true
+  setTimeout(() => {
+    startAnimation = false
+    updateGameStage(GameState.PLAYING)
+  }, 800)
+}
+
 function playMusic () {
   if (soundEnabled === 'on') {
     mixer.src = 'https://public-reassurance-bucket.s3.eu-central-1.amazonaws.com/random.mp3';
@@ -316,12 +347,25 @@ function createEmojiScore (successGrid: string) {
             </button>
             <div v-if="!shareSupported" class="small-center-message">Oyun linkini kopyala <br> ve önüne gelene gönder.</div>
             <div v-if="shareSupported" class="small-center-message">Oyun linkini <br> önüne gelenle paylaş.</div>
+            <div id="force-entry" 
+              @click="onForceEntry"
+              v-bind:class="forceEntryError ? 'please-wait' : fallingThroughChimney ? 'falling-down' : undefined">
+              <p v-if="fallingThroughChimney">
+                Pat... Küt...
+              </p>
+              <p v-else-if="forceEntryError">
+                {{forceEntryError}}
+              </p>
+              <p class="force-entry-text" v-else>
+                <i class="fa-solid fa-ring"></i> Bacadan gir 
+              </p>
+            </div>
             <div v-if="soundEnabled === 'on'" class="volume-icon">
               <i class="fa-solid fa-volume-high" @click="onMute"></i>
             </div>
             <div v-if="soundEnabled === 'off'" class="volume-icon" @click="onUnMute">
-              <i class="fa-solid fa-volume-xmark"></i
-            ></div>
+              <i class="fa-solid fa-volume-xmark"></i>
+            </div>
           </div>
 
           <div v-if="startAnimation" class="start-animation">
@@ -640,11 +684,54 @@ h2 {
   pointer-events: none;
 }
 
- #waiting.epic {
-    animation-iteration-count: infinite;
-    animation-name: drugs;
-    animation-duration: 1s;
-  }
+#waiting.epic {
+  animation-iteration-count: infinite;
+  animation-name: drugs;
+  animation-duration: 1s;
+}
+
+#force-entry {
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  margin: 15px 0 0 0;
+  padding: 10px;
+  background-color: rgb(90, 90, 90);
+  border-radius: 10px;
+  font-weight: bold;
+  color: white;
+  transition: background-color 0.2s;
+}
+
+.force-entry-text {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.dark #force-entry {
+  color: white;
+}
+
+#force-entry:hover {
+  background-color: rgb(200, 39, 39);
+}
+
+.please-wait {
+  cursor: default !important;
+  background-color: rgb(200, 39, 39) !important;
+}
+
+.falling-down {
+  background-color: rgb(255, 251, 0) !important;
+  color: black !important;
+}
+
+.fa-ring {
+  margin-right: 10px;
+}
+
 
 .fade-scores-enter-active,
 .fade-scores-leave-active,
