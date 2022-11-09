@@ -230,7 +230,7 @@ function onForceEntry () {
     }
   }
   
-  if (readyCount / playerCount < 0.65) {
+  if (readyCount / playerCount < 0.65 || playerCount === 1) {
     forceEntryError = 'Hele biraz bekle'
     setTimeout(() => {
       forceEntryError = ''
