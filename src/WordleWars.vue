@@ -314,13 +314,13 @@ function createEmojiScore (successGrid: string) {
           <h2>Oyuncular bekleniyor</h2>
           <div class="waiting-list">
             <div class="waiting-player">
-              <span>{{ myPresence.name }} (siz)</span>
+              <span class="player-name">{{ myPresence.name }} (siz)</span>
               <div :class="[myPresence.stage === GameState.READY ? 'waiting-player-ready' : 'waiting-player-waiting']">
                 {{ myPresence.stage === GameState.READY ? 'Hazır' : 'Bekliyor' }}
               </div>
             </div>
             <div v-for="other in othersPresence" class="waiting-player">
-              <span v-if="other.name">{{ other.name }}</span>
+              <span v-if="other.name" class="player-name">{{ other.name }}</span>
               <span v-else><i>İsim seçiyor...</i></span>
               <div :class="[other.stage === GameState.WAITING || other.stage === GameState.INTRO ? 'waiting-player-waiting' : 'waiting-player-ready']">
                 {{ other.stage === GameState.READY ? 'Hazır' : other.stage === GameState.PLAYING ? 'Oyunda' : 'Bekliyor' }}
@@ -492,6 +492,11 @@ label {
   align-items: center;
   margin-top: 15px;
   justify-content: center;
+}
+
+.player-name {
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .volume-icon > i {

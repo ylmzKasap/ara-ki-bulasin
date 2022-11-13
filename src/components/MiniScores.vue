@@ -24,7 +24,7 @@ const { sortedUsers, shrink = false } = defineProps<{
         <span class="mini-score-name">{{ sortedUsers[0].name }}</span> cevabı buldu!
       </span>
       <span v-else>
-        <span class="mini-score-name">{{ sortedUsers[0].name }}</span> önde gidiyor
+        <span class="mini-score-name">{{ sortedUsers[0].name }}</span> önde gidiyor   
       </span>
       <ScoreCard :user="sortedUsers[0]" />
     </div>
@@ -43,7 +43,7 @@ const { sortedUsers, shrink = false } = defineProps<{
   width: 100%;
   max-width: 350px;
   font-size: 22px;
-  padding-top: 20px;
+  padding-top: 10px;
 }
 
 .mini-score {
@@ -58,7 +58,7 @@ const { sortedUsers, shrink = false } = defineProps<{
   justify-content: center;
   align-items: center;
   gap: 5px;
-  margin-bottom: -20px
+  margin-bottom: -20px;
 }
 
 .mini-score-score {
@@ -67,7 +67,6 @@ const { sortedUsers, shrink = false } = defineProps<{
   flex-shrink: 0;
   flex-grow: 0;
   width: 40px;
-  text-align: left;
 }
 
 .dark .mini-score-score {
@@ -93,6 +92,9 @@ const { sortedUsers, shrink = false } = defineProps<{
 
   .mini-score-mobile.shrink {
     display: flex;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
