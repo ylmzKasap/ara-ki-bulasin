@@ -860,7 +860,7 @@ h2 {
   width: 60%;
 }
 
-#player-stats-row :nth-child(3), :nth-child(4) {
+#player-stats-row :nth-child(3), #player-stats-row :nth-child(4) {
   width: 15%;
 }
 
