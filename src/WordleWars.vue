@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { watchEffect } from 'vue'
+import { isProxy, onMounted, reactive, toRaw, watchEffect } from 'vue'
+import axios from 'axios'
 import ConfettiExplosion from 'vue-confetti-explosion'
-import { GameCompleteProps, GameState, LettersGuessedProps, LetterState, OtherScore, OtherUser } from './types'
+import { GameCompleteProps, GameState, LettersGuessedProps, LetterState, OtherScore, OtherUser, Player, RoomInfo } from './types'
 import ExampleWrapper from './components/ExampleWrapper.vue'
 import MiniBoardPlaying from './components/MiniBoardPlaying.vue'
 import MiniBoardScore from './components/MiniBoardScore.vue'
@@ -30,18 +31,23 @@ import { isMobile } from './lib/copyText'
 // Get word of the day. Resets at UTC +00:00
 const { answer } = getWordOfTheDay()
 // Current state of game, username, etc
+const params = new URL(location.href).searchParams;
+const room_id = params.get('room');
+
 let gameState: GameState = $ref(GameState.CONNECTING)
 let username = $ref(localStorage.getItem('username') || '')
+let public_id = $ref(localStorage.getItem('public_id') || '');
+let private_id = $ref(localStorage.getItem('private_id') || '');
 let startAnimation = $ref(false)
 let confettiAnimation = $ref(false)
 let emojiScore = $ref('')
 let copyLinkMessage = $ref('')
 let forceEntryError = $ref('')
 let fallingThroughChimney = $ref(false)
+let roomInfo: RoomInfo = $ref({value: {} as any});
 let clicked = $ref(false)
 const shareSupported = navigator.share !== undefined && isMobile()
 let shareMessage = shareSupported ? 'Bağlantıyı paylaş' : 'Bağlantıyı kopyala'
-
 
 // Custom Liveblocks hooks, based on the Liveblocks React library
 const [myPresence, updateMyPresence] = useMyPresence()
@@ -117,7 +123,8 @@ const gameEvents: { [key in GameState]?: () => void } = {
   // When all users are finished, show scores
   [GameState.COMPLETE]: () => {
     if (allInStages([GameState.SCORES, GameState.COMPLETE, GameState.WAITING])) {
-      updateGameStage(GameState.SCORES)
+      updateGameStage(GameState.SCORES);
+      get_room_info();
     }
   }
 }
@@ -169,6 +176,19 @@ async function enterWaitingRoom () {
 
   updateGameStage(GameState.WAITING)
   localStorage.setItem('username', username)
+
+  if (!username || !private_id) {
+    return;
+  }
+  
+  try {
+    await axios.put('https://server.arakibulasın.com/player/name', {
+    private_id: private_id,
+    name: username
+  })
+  } catch {
+    await login(true);
+  }
 }
 
 
@@ -192,10 +212,11 @@ function onLettersGuessed ({ letterStates, letterBoard }: LettersGuessedProps) {
 }
 
 // When current player wins or loses game, celebrate, update score with ticks, await others winning
-function onGameComplete ({ success, successGrid }: GameCompleteProps) {
+async function onGameComplete ({ success, successGrid }: GameCompleteProps) {
   if (!myPresence || !savedScores?.value) {
     return
   }
+
   updateGameStage(GameState.COMPLETE)
   let updatedPresence: { timeFinished: number, score?: {} } = { timeFinished: Number(Date.now()) }
   if (success) {
@@ -206,7 +227,21 @@ function onGameComplete ({ success, successGrid }: GameCompleteProps) {
   updateMyPresence(updatedPresence)
   savedScores.value()!.push(myPresence.value as OtherUser)
   emojiScore = createEmojiScore(successGrid || '')
+
+  try {
+    await axios.put('https://server.arakibulasın.com/player/guess', {
+    private_id: private_id,
+    alias: username,
+    room_id: room_id,
+    attempt: `${myPresence.value.rowsComplete}`,
+    found: success
+  })
+  } catch {
+    console.log('Bugünlük bu kadar, bay bay')
+  }
+  
 }
+
 
 // Copy link on click button
 function onCopyLink () {
@@ -267,6 +302,38 @@ function onUnMute () {
   playMusic();
 }
 
+function calculateMeanScore (player: Player) {
+  let playerRaw = isProxy(player) ? toRaw(player) : player;
+
+  let guessSum = 0;
+  const guesses = playerRaw.room[0].guesses;
+
+  if (guesses.length === 0) {
+    return 0;
+  }
+
+  for (let guess of guesses) {
+    guessSum += Number(guess.attempt)
+  }
+
+  const guessMean = guessSum / guesses.length;
+
+  return guessMean % 1 === 0 ? guessMean : guessMean.toFixed(2);  
+}
+
+function sortPlayers (players: Player[]) {
+  let playersRaw = isProxy(players) ? toRaw(players) : players;
+
+  return playersRaw.sort((a, b) => {
+    if (calculateMeanScore(a) < calculateMeanScore(b)) {
+      return -1;
+    } else if (calculateMeanScore(a) > calculateMeanScore(b)) {
+      return 1;
+    }
+    return 0;
+  }) 
+}
+
 // Create emoji scores
 function createEmojiScore (successGrid: string) {
   let resultString = `#Arayıp bulanlar \n\n`
@@ -277,13 +344,45 @@ function createEmojiScore (successGrid: string) {
   return resultString
 }
 
+async function get_room_info() {
+  const room = await axios.get(`https://server.arakibulasın.com/player/room/${room_id}`);
+  roomInfo.value = room.data;
+}
+
+async function login(reset=false) {
+  if ((!public_id || !private_id) || reset) {
+    const newPlayer = await axios.post('https://server.arakibulasın.com/player');
+    const newPublicId = newPlayer.data.public_id;
+    const newPrivateId = newPlayer.data.private_id;
+    localStorage.setItem('public_id', newPublicId);
+    localStorage.setItem('private_id',newPrivateId);
+    public_id = newPublicId;
+    private_id = newPrivateId;
+  }
+}
+
+function process_room_info() {
+  if (isProxy(roomInfo.value)) {
+    const rawObject = toRaw(roomInfo.value);
+    return rawObject;
+  }
+}
+
+onMounted(() => {
+  get_room_info();
+  login();
+})
+
 </script>
 
 <template>
   <ExampleWrapper>
     <Header />
 
-    <div class="transition-wrapper">
+    <div 
+      class="transition-wrapper"
+      v-bind:class="(soundEnabled === 'on' && ![GameState.INTRO, GameState.CONNECTING].includes(gameState)) ? 'epic'
+      : [GameState.INTRO, GameState.CONNECTING, GameState.READY, GameState.WAITING].includes(gameState) ? 'cream' : 'not-epic'">
       <div v-if="gameState === GameState.CONNECTING" id="connecting">
         <MiniBoard class="animate-ping" :large="true" :showLetters="true" :user="{ board: messages.connecting }" :rows="messages.connecting.length" />
       </div>
@@ -294,7 +393,7 @@ function createEmojiScore (successGrid: string) {
           <form @submit.prevent="enterWaitingRoom">
             <label for="set-username">Oyuncu ismi</label>
             <input type="text" id="set-username" v-model="username" autocomplete="off" required />
-            <button class="ready-button" @click="playMusic">Oyuna katıl</Button>
+            <button class="ready-button" @click="playMusic(); process_room_info();">Oyuna katıl</Button>
           </form>
           <div class="divider" />
           <button class="copy-button" @click="onCopyLink" :disabled="!!copyLinkMessage">
@@ -309,7 +408,7 @@ function createEmojiScore (successGrid: string) {
         </div>
       </div>
 
-      <div v-if="gameState === GameState.WAITING || gameState === GameState.READY" id="waiting" v-bind:class="soundEnabled === 'on' ? 'epic' : 'not-epic'">
+      <div v-if="gameState === GameState.WAITING || gameState === GameState.READY" id="waiting">
         <div>
           <h2>Oyuncular bekleniyor</h2>
           <div class="waiting-list">
@@ -374,7 +473,6 @@ function createEmojiScore (successGrid: string) {
         </div>
       </div>
 
-
       <div v-if="gameState === GameState.PLAYING || gameState === GameState.COMPLETE" id="playing">
         <MiniScores :sortedUsers="sortedUsers" :shrink="true" />
         <Game :answer="answer" @lettersGuessed="onLettersGuessed" @gameComplete="onGameComplete">
@@ -391,7 +489,6 @@ function createEmojiScore (successGrid: string) {
         </Game>
       </div>
 
-
       <Transition name="fade-scores">
         <div v-if="gameState === GameState.SCORES" id="scores">
           <div>
@@ -402,9 +499,6 @@ function createEmojiScore (successGrid: string) {
             <div class="scores-grid">
               <MiniBoardScore v-for="(other, index) in sortUsers(savedScores().toArray())" :user="other" :position="index + 1" :showLetters="true" />
             </div>
-            <button v-if="myPresence?.board?.length" @click="copyTextToClipboard(emojiScore)" class="ready-button">
-              Puanları kopyala <svg xmlns="http://www.w3.org/2000/svg" class="inline -mt-0.5 ml-0.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" /><path d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v6h-4.586l1.293-1.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L10.414 13H15v3a2 2 0 01-2 2H5a2 2 0 01-2-2V5zM15 11h2a1 1 0 110 2h-2v-2z" /></svg>
-            </button>
             <div class="divider" />
             <div class="text-center mt-6">
               Bugünlük bu kadar. Bay bay!
@@ -413,6 +507,29 @@ function createEmojiScore (successGrid: string) {
           </div>
         </div>
       </Transition>
+
+      <div id="room-stats" v-if="gameState === GameState.WAITING || gameState === GameState.READY || gameState === GameState.SCORES">
+        <header id="room-stats-description" class="room-stats-row">Oda istatistikleri</header>
+        <div id="room-stats-info" class="room-stats-row" v-if="roomInfo.value.length === 0">Bu odaya henüz balta girmemiş</div>
+        <table id ="room-stats-table" v-if="roomInfo.value.length">
+          <thead>
+            <tr id="room-stats-header">
+              <th class="table-header">#</th>
+              <th class="table-header">İsim</th>
+              <th class="table-header">Oyun sayısı</th>
+              <th class="table-header">Ortalama tahmin</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr id="player-stats-row" v-for="(player, index) in sortPlayers(roomInfo.value)">
+              <td>{{index + 1}}</td>
+              <td>{{player.name}}</td>
+              <td>{{player.room[0].guesses.length}}</td> 
+              <td>{{calculateMeanScore(player)}}</td>    
+            </tr>            
+          </tbody>
+        </table>
+      </div>
 
       <div v-if="confettiAnimation" class="confetti-wrapper">
         <div>
@@ -442,21 +559,26 @@ function createEmojiScore (successGrid: string) {
 }
 
 .transition-wrapper {
+  display: flex;
+  align-items: center;
   position: relative;
-  height: 100%;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: auto;
+  font-size: 18px;
+  background-color: white;
+}
+
+.transition-wrapper.cream {
+  background-color: #eff5f0;
 }
 
 .transition-wrapper > div {
-  min-height: 100%;
+  min-width: 100%;
 }
 
-#connecting, #intro, #waiting {
-  font-size: 18px;
-  background: #eff5f0;
-}
-
-.dark #connecting, .dark #intro, .dark #waiting, .dark #scores {
-  background: #18181B;
+.dark .transition-wrapper {
+  background-color: #18181B;
 }
 
 #connecting {
@@ -470,7 +592,8 @@ function createEmojiScore (successGrid: string) {
   width: 320px;
   max-width: 100%;
   background: #fff;
-  padding: 40px 35px 30px 35px;
+  padding: 30px 35px 30px 35px;
+  margin: 30px 0 30px 0;
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -571,12 +694,15 @@ h2 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   flex-grow: 1;
 }
 
 #playing {
   justify-content: space-between;
+}
+
+.dark #playing {
+  background-color: inherit;
 }
 
 .mini-board-container {
@@ -586,6 +712,10 @@ h2 {
   grid-auto-columns: auto;
   grid-auto-flow: column;
   gap: 0 40px;
+}
+
+#intro {
+  justify-content: center;
 }
 
 #intro form, .waiting-list {
@@ -676,6 +806,75 @@ h2 {
   grid-gap: 40px;
 }
 
+#room-stats {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin-bottom: 40px;
+}
+
+.room-stats-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 50px;
+  padding: 10px;
+  width: 70%;
+}
+
+#room-stats-info {
+  background-color: rgb(230, 230, 230);
+  color: black;
+}
+
+#room-stats-description {
+  background-color: rgb(74, 74, 74);
+  color: white;
+  border-radius: max(20px, 3vh) max(20px, 3vh) 0 0;
+}
+
+#room-stats-table {
+  width: 70%;
+}
+
+#player-stats-row > td {
+  text-align: center;
+  padding: 10px;
+}
+
+#player-stats-row:nth-child(even) {
+  background-color: #eff5f0;
+}
+
+#player-stats-row:nth-child(odd) {
+  background-color: #fafafa;
+}
+
+#player-stats-row :nth-child(1) {
+  width: 10%;
+}
+
+#player-stats-row :nth-child(2) {
+  width: 60%;
+}
+
+#player-stats-row :nth-child(3), :nth-child(4) {
+  width: 15%;
+}
+
+#room-stats-header {
+  width: 100%;
+}
+
+.table-header {
+  padding: 10px;
+  background-color: rgb(52, 184, 131);
+  font-size: 0.9rem;
+  color: white;
+}
+
 .confetti-wrapper {
   position: fixed;
   top: -15%;
@@ -689,7 +888,7 @@ h2 {
   pointer-events: none;
 }
 
-#waiting.epic {
+.transition-wrapper.epic {
   animation-iteration-count: infinite;
   animation-name: drugs;
   animation-duration: 1s;
@@ -755,7 +954,14 @@ h2 {
 @media (max-width: 715px) {
   #intro, #waiting {
     display: block;
-    background: #fff;
+  }
+
+  .transition-wrapper.cream {
+    background-color: white;
+  }
+
+  .dark .transition-wrapper {
+    background-color: #18181B;
   }
 
   #intro > div, #waiting > div {

@@ -23,6 +23,27 @@ export type OtherUser = {
   timeFinished: number
 }
 
+export type Player = {
+  _id: string;
+  name: string;
+  room: {
+    _id: string;
+    id: string;
+    guesses: {
+      alias: string;
+      attempt: string;
+      chear: boolean;
+      date: string;
+      found: boolean;
+      _id: string;
+    }[]
+  }[]
+}
+
+export type RoomInfo = {
+  value: Player[];
+}
+
 export const enum LetterState {
   INITIAL = 0,
   CORRECT = 'correct',

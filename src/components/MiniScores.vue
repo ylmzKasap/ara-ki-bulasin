@@ -41,9 +41,10 @@ const { sortedUsers, shrink = false } = defineProps<{
   gap: 18px;
   margin: 0 auto;
   width: 100%;
-  max-width: 350px;
-  font-size: 22px;
-  padding-top: 10px;
+  max-width: 450px;
+  font-size: 20px;
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 
 .mini-score {

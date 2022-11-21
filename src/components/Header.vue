@@ -211,6 +211,7 @@ header {
   text-align: center;
   background: #fff;
   padding: 1px 0;
+  z-index: 10;
 }
 
 .dark header {
