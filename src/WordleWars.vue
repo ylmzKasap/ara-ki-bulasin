@@ -342,6 +342,38 @@ function calculateMeanScore (player: Player) {
   return guessMean % 1 === 0 ? guessMean : guessMean.toFixed(2);  
 }
 
+function calculateSuccess (player: Player) {
+  let playerRaw = isProxy(player) ? toRaw(player) : player;
+
+  let answersFound = 0;
+  let cheatCount = 0;
+  const guesses = playerRaw.room[0].guesses;
+
+  if (guesses.length === 0) {
+    return 0;
+  }
+
+  for (let guess of guesses) {
+    if (guess.cheat) {
+      cheatCount += 1;
+      continue;
+    }
+
+    if (guess.found) {
+      answersFound += 1;
+    }
+  }
+
+  const gamesWithoutCheating = guesses.length - cheatCount;
+
+  if (gamesWithoutCheating === 0) {
+    return 0;
+  }
+
+  const successRate = (answersFound / gamesWithoutCheating) * 100;
+  return successRate % 1 === 0 ? successRate : successRate.toFixed(2); 
+}
+
 function sortPlayers (players: Player[]) {
   let playersRaw = isProxy(players) ? toRaw(players) : players;
 
@@ -544,6 +576,7 @@ onMounted(() => {
                 <th class="table-header">İsim</th>
                 <th class="table-header">Oyun sayısı</th>
                 <th class="table-header">Ortalama tahmin</th>
+                <th class="table-header">Başarı oranı</th>
               </tr>
             </thead>
             <tbody>
@@ -554,7 +587,8 @@ onMounted(() => {
                   <span class="cheater-label" v-if="cheater_ids.includes(player._id)"> (hileci)</span>
                 </td>
                 <td>{{player.room[0].guesses.length}}</td> 
-                <td>{{calculateMeanScore(player)}}</td>    
+                <td>{{calculateMeanScore(player)}}</td> 
+                <td>%{{calculateSuccess(player)}}</td>    
                 </tr>            
             </tbody>
           </table>
@@ -909,10 +943,10 @@ h2 {
 }
 
 #player-stats-row :nth-child(2) {
-  width: 60%;
+  width: 35%;
 }
 
-#player-stats-row :nth-child(3), #player-stats-row :nth-child(4) {
+#player-stats-row :nth-child(3), #player-stats-row :nth-child(4), #player-stats-row :nth-child(5) {
   width: 15%;
 }
 
