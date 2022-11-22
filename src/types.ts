@@ -32,7 +32,7 @@ export type Player = {
     guesses: {
       alias: string;
       attempt: string;
-      chear: boolean;
+      cheat: boolean;
       date: string;
       found: boolean;
       _id: string;

@@ -45,6 +45,7 @@ let copyLinkMessage = $ref('')
 let forceEntryError = $ref('')
 let fallingThroughChimney = $ref(false)
 let roomInfo: RoomInfo = $ref({value: {} as any});
+let cheater_ids: string[] = $ref([])
 let clicked = $ref(false)
 const shareSupported = navigator.share !== undefined && isMobile()
 let shareMessage = shareSupported ? 'Bağlantıyı paylaş' : 'Bağlantıyı kopyala'
@@ -124,7 +125,7 @@ const gameEvents: { [key in GameState]?: () => void } = {
   [GameState.COMPLETE]: () => {
     if (allInStages([GameState.SCORES, GameState.COMPLETE, GameState.WAITING])) {
       updateGameStage(GameState.SCORES);
-      get_room_info();
+      setTimeout(() => get_room_info(), 1000);
     }
   }
 }
@@ -306,6 +307,8 @@ function calculateMeanScore (player: Player) {
   let playerRaw = isProxy(player) ? toRaw(player) : player;
 
   let guessSum = 0;
+  let cheatCount = 0;
+  let cheatedRecently = false;
   const guesses = playerRaw.room[0].guesses;
 
   if (guesses.length === 0) {
@@ -313,10 +316,28 @@ function calculateMeanScore (player: Player) {
   }
 
   for (let guess of guesses) {
+    if (guess.cheat) {
+      if (!cheatedRecently) {
+        let hoursSinceCheat = Math.round((Date.now() - Date.parse(guess.date)) / 3600000);
+        if (hoursSinceCheat < 96) {
+          cheatedRecently = true;
+          if (!cheater_ids.includes(player._id)) {
+            cheater_ids.push(player._id);
+          }  
+        }  
+      }
+      cheatCount += 1;
+      continue;
+    }
     guessSum += Number(guess.attempt)
   }
 
-  const guessMean = guessSum / guesses.length;
+  const gamesWithoutCheating = guesses.length - cheatCount;
+  const guessMean = gamesWithoutCheating ? guessSum / (gamesWithoutCheating) : 'yok';
+
+  if (typeof guessMean === 'string') {
+    return guessMean;
+  }
 
   return guessMean % 1 === 0 ? guessMean : guessMean.toFixed(2);  
 }
@@ -371,6 +392,10 @@ function process_room_info() {
 onMounted(() => {
   get_room_info();
   login();
+})
+
+onMounted(() => {
+  console.log(savedScores?.value());
 })
 
 </script>
@@ -509,28 +534,33 @@ onMounted(() => {
       </Transition>
 
       <div id="room-stats" v-if="gameState === GameState.WAITING || gameState === GameState.READY || gameState === GameState.SCORES">
-        <header id="room-stats-description" class="room-stats-row">Oda istatistikleri</header>
-        <div id="room-stats-info" class="room-stats-row" v-if="roomInfo.value.length === 0">Bu odaya henüz balta girmemiş</div>
-        <table id ="room-stats-table" v-if="roomInfo.value.length">
-          <thead>
-            <tr id="room-stats-header">
-              <th class="table-header">#</th>
-              <th class="table-header">İsim</th>
-              <th class="table-header">Oyun sayısı</th>
-              <th class="table-header">Ortalama tahmin</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr id="player-stats-row" v-for="(player, index) in sortPlayers(roomInfo.value)">
-              <td>{{index + 1}}</td>
-              <td>{{player.name}}</td>
-              <td>{{player.room[0].guesses.length}}</td> 
-              <td>{{calculateMeanScore(player)}}</td>    
-            </tr>            
-          </tbody>
-        </table>
+        <div id="room-stats-wrapper">
+          <header id="room-stats-description">Oda istatistikleri</header>
+          <div id="room-stats-info" class="room-stats-row" v-if="roomInfo.value.length === 0">Bu odaya henüz balta girmemiş</div>
+          <table id ="room-stats-table" v-if="roomInfo.value.length">
+            <thead>
+              <tr id="room-stats-header">
+                <th class="table-header">#</th>
+                <th class="table-header">İsim</th>
+                <th class="table-header">Oyun sayısı</th>
+                <th class="table-header">Ortalama tahmin</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="player-stats-row" v-for="(player, index) in sortPlayers(roomInfo.value)"
+              v-bind:class="cheater_ids.includes(player._id) ? 'cheater' : ''">
+                <td>{{index + 1}}</td>
+                <td>{{player.name}}
+                  <span class="cheater-label" v-if="cheater_ids.includes(player._id)"> (hileci)</span>
+                </td>
+                <td>{{player.room[0].guesses.length}}</td> 
+                <td>{{calculateMeanScore(player)}}</td>    
+                </tr>            
+            </tbody>
+          </table>
+        </div> 
       </div>
-
+      
       <div v-if="confettiAnimation" class="confetti-wrapper">
         <div>
           <ConfettiExplosion :colors="['#1bb238', '#d2a207', '#82918b']" />
@@ -824,22 +854,44 @@ h2 {
   width: 70%;
 }
 
+#room-stats-wrapper {
+  height: auto;
+  width: 70%;
+  border-radius: max(20px, 3vh) max(20px, 3vh) 0 0;
+  overflow: hidden;
+}
+
+#room-stats-wrapper {
+  box-shadow: rgb(207, 207, 207) -1px 2px 8px 3px;
+}
+
+.dark #room-stats-wrapper {
+  box-shadow: none;
+}
+
 #room-stats-info {
   background-color: rgb(230, 230, 230);
   color: black;
 }
 
 #room-stats-description {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  min-height: 50px;
+  padding: 10px;
   background-color: rgb(74, 74, 74);
   color: white;
-  border-radius: max(20px, 3vh) max(20px, 3vh) 0 0;
 }
 
 #room-stats-table {
-  width: 70%;
+  width: 100%;
 }
 
 #player-stats-row > td {
+  color: black;
   text-align: center;
   padding: 10px;
 }
@@ -862,6 +914,15 @@ h2 {
 
 #player-stats-row :nth-child(3), #player-stats-row :nth-child(4) {
   width: 15%;
+}
+
+#player-stats-row.cheater {
+  background-color: rgb(239, 209, 209);
+}
+
+.cheater-label {
+  font-weight: bold;
+  letter-spacing: 0.05rem;
 }
 
 #room-stats-header {
@@ -958,6 +1019,10 @@ h2 {
 
   .transition-wrapper.cream {
     background-color: white;
+  }
+
+  #room-stats-wrapper {
+    width: 95%;
   }
 
   .dark .transition-wrapper {
