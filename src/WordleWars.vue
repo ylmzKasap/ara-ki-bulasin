@@ -333,11 +333,7 @@ function calculateMeanScore (player: Player) {
   }
 
   const gamesWithoutCheating = guesses.length - cheatCount;
-  const guessMean = gamesWithoutCheating ? guessSum / (gamesWithoutCheating) : 'yok';
-
-  if (typeof guessMean === 'string') {
-    return guessMean;
-  }
+  const guessMean = gamesWithoutCheating ? guessSum / (gamesWithoutCheating) : 7;
 
   return guessMean % 1 === 0 ? guessMean : guessMean.toFixed(2);  
 }
@@ -583,7 +579,7 @@ onMounted(() => {
                   <span class="cheater-label" v-if="cheater_ids.includes(player._id)"> (hileci)</span>
                 </td>
                 <td>{{player.room[0].guesses.length}}</td> 
-                <td>{{calculateMeanScore(player)}}</td> 
+                <td>{{calculateMeanScore(player) === 7 ? 'yok' : calculateMeanScore(player)}}</td> 
                 <td>%{{calculateSuccess(player)}}</td>    
                 </tr>            
             </tbody>
