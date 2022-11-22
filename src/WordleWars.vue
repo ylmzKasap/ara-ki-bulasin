@@ -426,10 +426,6 @@ onMounted(() => {
   login();
 })
 
-onMounted(() => {
-  console.log(savedScores?.value());
-})
-
 </script>
 
 <template>
@@ -891,7 +887,7 @@ h2 {
 #room-stats-wrapper {
   height: auto;
   width: 70%;
-  border-radius: max(20px, 3vh) max(20px, 3vh) 0 0;
+  border-radius: max(20px, 3vh);
   overflow: hidden;
 }
 
@@ -934,6 +930,19 @@ h2 {
   background-color: #eff5f0;
 }
 
+.dark #player-stats-row:nth-child(even) {
+  background-color: #5d5d5d;
+}
+
+.dark #player-stats-row:nth-child(odd) {
+  background-color: #6b6b6b;
+}
+
+.dark #player-stats-row > td {
+  color: white;
+}
+
+
 #player-stats-row:nth-child(odd) {
   background-color: #fafafa;
 }
@@ -943,15 +952,23 @@ h2 {
 }
 
 #player-stats-row :nth-child(2) {
-  width: 35%;
+  width: 40%;
 }
 
-#player-stats-row :nth-child(3), #player-stats-row :nth-child(4), #player-stats-row :nth-child(5) {
+#player-stats-row :nth-child(3), #player-stats-row :nth-child(4) {
   width: 15%;
+}
+
+#player-stats-row :nth-child(5) {
+  width: 20%;
 }
 
 #player-stats-row.cheater {
   background-color: rgb(239, 209, 209);
+}
+
+.dark #player-stats-row.cheater {
+  background-color: rgb(126, 13, 13);
 }
 
 .cheater-label {
@@ -968,6 +985,10 @@ h2 {
   background-color: rgb(52, 184, 131);
   font-size: 0.9rem;
   color: white;
+}
+
+.dark .table-header {
+  background-color: rgb(19, 131, 87);
 }
 
 .confetti-wrapper {
