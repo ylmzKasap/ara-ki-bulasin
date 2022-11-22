@@ -333,7 +333,7 @@ function calculateMeanScore (player: Player) {
   }
 
   const gamesWithoutCheating = guesses.length - cheatCount;
-  const guessMean = gamesWithoutCheating ? guessSum / (gamesWithoutCheating) : 7;
+  const guessMean = gamesWithoutCheating ? guessSum / gamesWithoutCheating : 7;
 
   return guessMean % 1 === 0 ? guessMean : guessMean.toFixed(2);  
 }
@@ -560,7 +560,7 @@ onMounted(() => {
       <div id="room-stats" v-if="gameState === GameState.WAITING || gameState === GameState.READY || gameState === GameState.SCORES">
         <div id="room-stats-wrapper">
           <header id="room-stats-description">Oda istatistikleri</header>
-          <div id="room-stats-info" class="room-stats-row" v-if="roomInfo.value.length === 0">Bu odaya henüz balta girmemiş</div>
+          <div id="room-stats-info" v-if="roomInfo.value.length === 0">Bu odaya henüz balta girmemiş</div>
           <table id ="room-stats-table" v-if="roomInfo.value.length">
             <thead>
               <tr id="room-stats-header">
@@ -576,6 +576,7 @@ onMounted(() => {
               v-bind:class="cheater_ids.includes(player._id) ? 'cheater' : ''">
                 <td>{{index + 1}}</td>
                 <td>{{player.name}}
+                  <span class="this-is-you" v-if="player._id === public_id">(siz)</span>
                   <span class="cheater-label" v-if="cheater_ids.includes(player._id)"> (hileci)</span>
                 </td>
                 <td>{{player.room[0].guesses.length}}</td> 
@@ -898,6 +899,8 @@ h2 {
 #room-stats-info {
   background-color: rgb(230, 230, 230);
   color: black;
+  padding: 10px;
+  text-align: center;
 }
 
 #room-stats-description {
@@ -965,6 +968,11 @@ h2 {
 
 .dark #player-stats-row.cheater {
   background-color: rgb(126, 13, 13);
+}
+
+.this-is-you {
+  font-weight: bold;
+  letter-spacing: 0.05rem;
 }
 
 .cheater-label {
