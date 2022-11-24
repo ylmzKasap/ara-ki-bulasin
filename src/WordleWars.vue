@@ -319,7 +319,7 @@ function calculateMeanScore (player: Player) {
     if (guess.cheat) {
       if (!cheatedRecently) {
         let hoursSinceCheat = Math.round((Date.now() - Date.parse(guess.date)) / 3600000);
-        if (hoursSinceCheat < 96) {
+        if (hoursSinceCheat < 72) {
           cheatedRecently = true;
           if (!cheater_ids.includes(player._id)) {
             cheater_ids.push(player._id);
@@ -366,7 +366,7 @@ function calculateSuccess (player: Player) {
     return 0;
   }
 
-  const successRate = (answersFound / gamesWithoutCheating) * 100;
+  const successRate = (answersFound / guesses.length) * 100;
   return successRate % 1 === 0 ? successRate : successRate.toFixed(2); 
 }
 
