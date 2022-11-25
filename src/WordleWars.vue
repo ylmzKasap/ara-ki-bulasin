@@ -34,8 +34,11 @@ const { answer } = getWordOfTheDay()
 const params = new URL(location.href).searchParams;
 const room_id = params.get('room');
 
+const maxUsernameLength = 40;
+const savedUsername = localStorage.getItem('username') || '';
+
 let gameState: GameState = $ref(GameState.CONNECTING)
-let username = $ref(localStorage.getItem('username') || '')
+let username = $ref(savedUsername.length <= maxUsernameLength ? savedUsername : '')
 let public_id = $ref(localStorage.getItem('public_id') || '');
 let private_id = $ref(localStorage.getItem('private_id') || '');
 let startAnimation = $ref(false)
@@ -441,7 +444,7 @@ onMounted(() => {
           <h2>İsminizi alalım</h2>
           <form @submit.prevent="enterWaitingRoom">
             <label for="set-username">Oyuncu ismi</label>
-            <input type="text" id="set-username" v-model="username" autocomplete="off" required />
+            <input type="text" id="set-username" v-model="username" autocomplete="off" maxlength="40" required />
             <button class="ready-button" @click="playMusic(); process_room_info();">Oyuna katıl</Button>
           </form>
           <div class="divider" />
