@@ -382,6 +382,11 @@ function sortPlayers (players: Player[]) {
     } else if (calculateMeanScore(a) > calculateMeanScore(b)) {
       return 1;
     }
+    if (calculateSuccess(a) < calculateSuccess(b)) {
+      return 1;
+    } else if (calculateSuccess(a) > calculateSuccess(b)) {
+      return -1;
+    }
     return 0;
   }) 
 }
