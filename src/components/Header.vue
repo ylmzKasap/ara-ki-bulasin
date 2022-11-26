@@ -150,9 +150,11 @@ async function merge_accounts () {
       <div class="divider" />
       <h2 class="mt-6">Hesap bilgileri</h2>
       <div style="display: flex; flex-direction: column;">
-        <p>Aşağıdaki metin hesabınızın kimlik numarasıdır. Aman diyeyim kimseyle paylaşmayın.</p>
+        <p>Aşağıdaki metin hesabınızın kimlik numarasıdır.
+          Olur da tarayıcı verileriniz silinirse hesabı kurtarmak için bir yere kaydetseniz fena olmaz.
+          Öyle herkesle paylaşmayın.</p>
         <code style="overflow-wrap: break-word; margin-top: 15px;">
-          {{privateId}}
+          {{privateId ? privateId : "Numara bulunamadı, sayfayı yenileyin."}}
         </code>
       <h2 class="mt-6">Hesap birleştirme</h2>
       <p>Birleştireceğiniz hesabın kimlik numarasını aşağıdaki alana yapıştırın.</p>

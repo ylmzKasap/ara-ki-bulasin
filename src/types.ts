@@ -34,6 +34,7 @@ export type Player = {
       attempt: string;
       cheat: boolean;
       date: string;
+      speed?: string;
       found: boolean;
       _id: string;
     }[]

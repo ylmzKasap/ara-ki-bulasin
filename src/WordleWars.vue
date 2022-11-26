@@ -47,9 +47,11 @@ let emojiScore = $ref('')
 let copyLinkMessage = $ref('')
 let forceEntryError = $ref('')
 let fallingThroughChimney = $ref(false)
-let roomInfo: RoomInfo = $ref({value: {} as any});
+let roomInfo: RoomInfo = $ref({value: {} as any})
 let cheater_ids: string[] = $ref([])
 let clicked = $ref(false)
+
+let gameStartTime: Date;
 const shareSupported = navigator.share !== undefined && isMobile()
 let shareMessage = shareSupported ? 'Bağlantıyı paylaş' : 'Bağlantıyı kopyala'
 
@@ -145,6 +147,11 @@ watchEffect(() => {
 function updateGameStage (stage: GameState) {
   if (myPresence?.value) {
     gameState = stage
+
+    if (gameState === GameState.PLAYING) {
+      gameStartTime = new Date();
+    }
+
     updateMyPresence({ stage })
   }
 }
@@ -232,13 +239,17 @@ async function onGameComplete ({ success, successGrid }: GameCompleteProps) {
   savedScores.value()!.push(myPresence.value as OtherUser)
   emojiScore = createEmojiScore(successGrid || '')
 
+  let gameEndTime = new Date();
+  let timeFound = (gameEndTime.valueOf() - gameStartTime.valueOf()) / 1000;
+
   try {
     await axios.put('https://server.arakibulasın.com/player/guess', {
     private_id: private_id,
     alias: username,
     room_id: room_id,
     attempt: `${myPresence.value.rowsComplete}`,
-    found: success
+    found: success,
+    speed: `${timeFound}`
   })
   } catch {
     console.log('Bugünlük bu kadar, bay bay')
@@ -345,7 +356,7 @@ function calculateSuccess (player: Player) {
   let playerRaw = isProxy(player) ? toRaw(player) : player;
 
   let answersFound = 0;
-  let cheatCount = 0;
+  let validGames = 0;
   const guesses = playerRaw.room[0].guesses;
 
   if (guesses.length === 0) {
@@ -354,23 +365,51 @@ function calculateSuccess (player: Player) {
 
   for (let guess of guesses) {
     if (guess.cheat) {
-      cheatCount += 1;
       continue;
     }
 
     if (guess.found) {
       answersFound += 1;
     }
+    validGames += 1;
   }
 
-  const gamesWithoutCheating = guesses.length - cheatCount;
-
-  if (gamesWithoutCheating === 0) {
+  if (validGames === 0) {
     return 0;
   }
 
   const successRate = (answersFound / guesses.length) * 100;
   return successRate % 1 === 0 ? successRate : successRate.toFixed(2); 
+}
+
+function calculateSpeed (player: Player) {
+  let playerRaw = isProxy(player) ? toRaw(player) : player;
+
+  let totalSpeed = 0;
+  let validGames = 0;
+  const guesses = playerRaw.room[0].guesses;
+
+  if (guesses.length === 0) {
+    return 0;
+  }
+
+  for (let guess of guesses) {
+    if (guess.cheat) {
+      continue;
+    }
+
+    if (guess.speed) {
+      totalSpeed += Number(guess.speed);
+      validGames += 1;
+    }
+  }
+
+  if (!validGames) {
+    return 0;
+  }
+
+  const speedRate = totalSpeed / validGames;
+  return speedRate % 1 === 0 ? speedRate : Math.round(speedRate); 
 }
 
 function sortPlayers (players: Player[]) {
@@ -577,6 +616,7 @@ onMounted(() => {
                 <th class="table-header">Oyun sayısı</th>
                 <th class="table-header">Ortalama tahmin</th>
                 <th class="table-header">Başarı oranı</th>
+                <th class="table-header">Hız</th>
               </tr>
             </thead>
             <tbody>
@@ -590,6 +630,7 @@ onMounted(() => {
                 <td>{{player.room[0].guesses.length}}</td> 
                 <td>{{calculateMeanScore(player) === 7 ? 'yok' : calculateMeanScore(player)}}</td> 
                 <td>%{{calculateSuccess(player)}}</td>    
+                <td>{{calculateSpeed(player) === 0 ? 'yok' : calculateSpeed(player) + 's'}}</td>    
                 </tr>            
             </tbody>
           </table>
@@ -959,7 +1000,7 @@ h2 {
 }
 
 #player-stats-row :nth-child(2) {
-  width: 40%;
+  width: 30%;
 }
 
 #player-stats-row :nth-child(3), #player-stats-row :nth-child(4) {
@@ -967,7 +1008,11 @@ h2 {
 }
 
 #player-stats-row :nth-child(5) {
-  width: 20%;
+  width: 15%;
+}
+
+#player-stats-row :nth-child(6) {
+  width: 15%;
 }
 
 #player-stats-row.cheater {
@@ -1073,13 +1118,41 @@ h2 {
   transform: translateX(-50%);
 }
 
+@media (max-width: 485px) {
+  .table-header {
+    font-size: 0.7rem;
+  }
+
+  #player-stats-row {
+    font-size: 0.9rem;
+  }
+}
+
 @media (max-width: 415px) {
   header h1 {
     font-size: 28px;
   }
 
+  #room-stats-description {
+    font-size: 1rem;
+  }
+
+  .table-header {
+    font-size: 0.6rem;
+  }
+
   #player-stats-row {
-    font-size: 0.9rem;
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 330px) {
+  .table-header {
+    font-size: 0.5rem;
+  }
+
+  #player-stats-row {
+    font-size: 0.58rem;
   }
 }
 
