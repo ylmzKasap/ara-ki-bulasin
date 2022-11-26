@@ -1077,6 +1077,10 @@ h2 {
   header h1 {
     font-size: 28px;
   }
+
+  #player-stats-row {
+    font-size: 0.9rem;
+  }
 }
 
 @media (max-width: 715px) {

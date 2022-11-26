@@ -305,11 +305,11 @@ header {
 }
 
 .merge-button.merging {
-  background-color: rgb(209, 204, 38);
+  background-color: rgb(209, 204, 38) !important;
 }
 
 .merge-button.merged {
-  background-color: rgb(39, 159, 103);
+  background-color: rgb(39, 159, 103) !important;
 }
 
 
