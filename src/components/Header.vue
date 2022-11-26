@@ -32,10 +32,11 @@ import Logo from '../Logo.vue'
 let darkMode = $ref(defaultDarkTheme)
 let colourBlindMode = $ref(defaultColourBlindTheme)
 let infoOpen = $ref(false)
-let privateId = $ref(localStorage.getItem('private_id'))
+let privateId = $ref(localStorage.getItem('private_id') || '')
 let otherAccountId = $ref('')
 let formError = $ref('')
 let merging = $ref(false)
+let merged = $ref(false)
 
 function toggleDarkMode () {
   darkMode = !darkMode
@@ -60,8 +61,11 @@ async function merge_accounts () {
     formError = "Kimlik numarasını kontrol edin"
     return
   }
-  if (merging) {
+  if (merging || merged) {
     return;
+  }
+  if (!privateId) {
+    privateId = localStorage.getItem('private_id') || '';
   }
   try {
     formError = "";
@@ -70,8 +74,8 @@ async function merge_accounts () {
     private_id_to_merge: otherAccountId,
     private_id_to_be_merged: privateId
   })
+    merged = true;
     merging = false;
-    console.log(mergeResponse);
     localStorage.setItem('private_id', mergeResponse.data.private_id);
     localStorage.setItem('public_id', mergeResponse.data.public_id);
     location.reload();
@@ -157,7 +161,9 @@ async function merge_accounts () {
       <form class="merge-accounts-form" @submit.prevent="merge_accounts">
         <input class="merge-input" type="text" v-model="otherAccountId"/>
         <p class="merge-error" v-if="formError">{{formError}}</p>
-        <button class="merge-button" :class="{merging: merging}" type="submit">{{merging ? 'Birleştiriliyor...' : 'Birleştir'}}</Button>
+        <button class="merge-button" :class="{merging: merging, merged: merged}" type="submit">
+          {{merging ? 'Birleştiriliyor...' : merged ? 'Birleştirildi!' : 'Birleştir'}}
+        </Button>
       </form>
       </div>
       
@@ -283,6 +289,10 @@ header {
   background-color: rgb(245, 247, 248);
 }
 
+.dark .merge-input {
+  color: black;
+}
+
 .merge-button {
   background-color: #27197d;
   color: white;
@@ -295,6 +305,10 @@ header {
 }
 
 .merge-button.merging {
+  background-color: rgb(209, 204, 38);
+}
+
+.merge-button.merged {
   background-color: rgb(39, 159, 103);
 }
 
@@ -303,6 +317,11 @@ header {
   text-align: center;
   background-color: rgb(248, 244, 225);
   padding: 10px;
+}
+
+.dark .merge-error {
+  background-color: rgb(112, 0, 0);
+  color: white;
 }
 
 .dark header {
