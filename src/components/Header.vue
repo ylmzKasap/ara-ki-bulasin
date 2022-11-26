@@ -24,6 +24,7 @@ const defaultColourBlindTheme = (() => {
 </script>
 
 <script lang="ts" setup>
+import axios, { AxiosError } from 'axios'
 import MiniBoard from './MiniBoard.vue'
 import messages from '../lib/messages'
 import Logo from '../Logo.vue'
@@ -31,6 +32,10 @@ import Logo from '../Logo.vue'
 let darkMode = $ref(defaultDarkTheme)
 let colourBlindMode = $ref(defaultColourBlindTheme)
 let infoOpen = $ref(false)
+let privateId = $ref(localStorage.getItem('private_id'))
+let otherAccountId = $ref('')
+let formError = $ref('')
+let merging = $ref(false)
 
 function toggleDarkMode () {
   darkMode = !darkMode
@@ -48,6 +53,39 @@ function toggleColourBlindMode () {
 function toggleInfoOpen () {
   infoOpen = !infoOpen
   document.documentElement.classList.toggle('overflow-hidden')
+}
+
+async function merge_accounts () {
+  if (otherAccountId.length !== 128) {
+    formError = "Kimlik numarasını kontrol edin"
+    return
+  }
+  if (merging) {
+    return;
+  }
+  try {
+    formError = "";
+    merging = true;
+    const mergeResponse = await axios.put('https://server.arakibulasın.com/player/merge', {
+    private_id_to_merge: otherAccountId,
+    private_id_to_be_merged: privateId
+  })
+    merging = false;
+    console.log(mergeResponse);
+    localStorage.setItem('private_id', mergeResponse.data.private_id);
+    localStorage.setItem('public_id', mergeResponse.data.public_id);
+    location.reload();
+  } catch (err) {
+    merging = false;
+    if (err instanceof AxiosError) {
+      const errorString = err.response?.data.error;
+      formError = errorString === 'Player does not exist'
+      ? 'Öyle birini bulamadık'
+      : errorString;
+    } else {
+      console.log('Unexpected error', err);
+    }
+  }
 }
 </script>
 
@@ -105,6 +143,24 @@ function toggleInfoOpen () {
         </p>
         <p>Kelimede harflerin hiçbiri yok.</p>
       </div>
+      <div class="divider" />
+      <h2 class="mt-6">Hesap bilgileri</h2>
+      <div style="display: flex; flex-direction: column;">
+        <p>Aşağıdaki metin hesabınızın kimlik numarasıdır. Aman diyeyim kimseyle paylaşmayın.</p>
+        <code style="overflow-wrap: break-word; margin-top: 15px;">
+          {{privateId}}
+        </code>
+      <h2 class="mt-6">Hesap birleştirme</h2>
+      <p>Birleştireceğiniz hesabın kimlik numarasını aşağıdaki alana yapıştırın.</p>
+      <p>İşlem sonucunda bu tarayıcıdaki bilgilerin yerini, yapıştırdığınız hesabın bilgileri alacak.</p>
+      <p>İki hesapta da oynadığınız oyunların başına kötü bir şey gelmeyecek.</p>
+      <form class="merge-accounts-form" @submit.prevent="merge_accounts">
+        <input class="merge-input" type="text" v-model="otherAccountId"/>
+        <p class="merge-error" v-if="formError">{{formError}}</p>
+        <button class="merge-button" :class="{merging: merging}" type="submit">{{merging ? 'Birleştiriliyor...' : 'Birleştir'}}</Button>
+      </form>
+      </div>
+      
       <div class="divider" />
       <p>
         <em>Her gün bir kelime, öyle fazla şey yapmayın.</em>
@@ -212,6 +268,41 @@ header {
   background: #fff;
   padding: 1px 0;
   z-index: 10;
+}
+
+.merge-accounts-form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.merge-input {
+  height: 2rem;
+  padding: 6px;
+  border: solid black 1px;
+  background-color: rgb(245, 247, 248);
+}
+
+.merge-button {
+  background-color: #27197d;
+  color: white;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.merge-button:hover {
+  background-color: #3e2fa1;
+}
+
+.merge-button.merging {
+  background-color: rgb(39, 159, 103);
+}
+
+
+.merge-error {
+  text-align: center;
+  background-color: rgb(248, 244, 225);
+  padding: 10px;
 }
 
 .dark header {
