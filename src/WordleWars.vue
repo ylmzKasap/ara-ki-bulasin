@@ -50,6 +50,7 @@ let fallingThroughChimney = $ref(false)
 let roomInfo: RoomInfo = $ref({value: {} as any})
 let cheater_ids: string[] = $ref([])
 let clicked = $ref(false)
+let statSpan = $ref(7)
 
 let gameStartTime: Date;
 const shareSupported = navigator.share !== undefined && isMobile()
@@ -317,6 +318,11 @@ function onUnMute () {
   playMusic();
 }
 
+function scrollBottom () {
+  const buttonContainer = document.getElementById('button-container');
+  setTimeout(() => buttonContainer?.scrollIntoView({behavior: "smooth", block: "center"}), 200)
+}
+
 function calculateMeanScore (player: Player) {
   let playerRaw = isProxy(player) ? toRaw(player) : player;
 
@@ -412,6 +418,24 @@ function calculateSpeed (player: Player) {
   return speedRate % 1 === 0 ? speedRate : Math.round(speedRate); 
 }
 
+function getPlayersInRange (players: Player[]) {
+  let playersRaw = isProxy(players) ? toRaw(players) : players;
+  let filteredPlayers = [];
+
+  for (let player of playersRaw) {
+    const guesses = player.room[0].guesses;
+    const filteredGuesses = guesses.filter(guess => 
+        Math.round((Date.now() - Date.parse(guess.date)) / 86400000) <= (statSpan < 0 ? 9**9 : statSpan))
+
+    if (filteredGuesses[0]) {
+      filteredPlayers.push({...player, 
+      room: [{guesses: filteredGuesses}]
+    })}
+  }
+
+  return filteredPlayers; 
+}
+
 function sortPlayers (players: Player[]) {
   let playersRaw = isProxy(players) ? toRaw(players) : players;
 
@@ -425,6 +449,11 @@ function sortPlayers (players: Player[]) {
       return 1;
     } else if (calculateSuccess(a) > calculateSuccess(b)) {
       return -1;
+    }
+    if (calculateSpeed(a) < calculateSpeed(b)) {
+      return -1;
+    } else if (calculateSpeed(a) > calculateSpeed(b)) {
+      return 1;
     }
     return 0;
   }) 
@@ -608,6 +637,7 @@ onMounted(() => {
         <div id="room-stats-wrapper">
           <header id="room-stats-description">Oda istatistikleri</header>
           <div id="room-stats-info" v-if="roomInfo.value.length === 0">Bu odaya henüz balta girmemiş</div>
+          <div id="room-stats-info" v-else-if="getPlayersInRange(roomInfo.value).length === 0">Bu süre zarfında oynayan yok</div>
           <table id ="room-stats-table" v-if="roomInfo.value.length">
             <thead>
               <tr id="room-stats-header">
@@ -620,9 +650,13 @@ onMounted(() => {
               </tr>
             </thead>
             <tbody>
-              <tr id="player-stats-row" v-for="(player, index) in sortPlayers(roomInfo.value)"
+              <tr id="player-stats-row" v-for="(player, index) in sortPlayers(getPlayersInRange(roomInfo.value))"
               v-bind:class="cheater_ids.includes(player._id) ? 'cheater' : ''">
-                <td>{{index + 1}}</td>
+                <td>
+                  {{(index + 1 === 1 ? '🥇 ' : '')}}
+                  {{(index + 1 === 2 ? '🥈 ' : '')}}
+                  {{(index + 1 === 3 ? '🥉 ' : '')}}
+                  {{index + 1}}</td>
                 <td>{{player.name}}
                   <span class="this-is-you" v-if="player._id === public_id">(siz)</span>
                   <span class="cheater-label" v-if="cheater_ids.includes(player._id)"> (hileci)</span>
@@ -634,6 +668,19 @@ onMounted(() => {
                 </tr>            
             </tbody>
           </table>
+          <div id="button-container" v-if="roomInfo.value.length !== 0">
+            <button class="stats-button" 
+              v-bind:class="(statSpan === 1 ? 'selected' : '')"
+              @click="() => {statSpan = 1; scrollBottom();}"
+            >Bugün</button>
+            <button class="stats-button" 
+              v-bind:class="(statSpan === 7 ? 'selected' : '')"
+              @click="() => {statSpan = 7; scrollBottom();}"
+            >Bu hafta</button>
+            <button class="stats-button"
+              v-bind:class="(statSpan < 0 ? 'selected' : '')"
+              @click="() => {statSpan = -1; scrollBottom();}">Baştan sona</button>
+          </div>
         </div> 
       </div>
       
@@ -966,6 +1013,21 @@ h2 {
 
 #room-stats-table {
   width: 100%;
+}
+
+#button-container {
+  display: flex;
+}
+
+.stats-button {
+  margin: 0;
+  border-radius: 0;
+  background-color: #5d5d5d;
+  font-size: calc(0.7rem + 0.4vw)
+}
+
+.stats-button.selected {
+  background-color: #24b143;
 }
 
 #player-stats-row > td {
