@@ -47,9 +47,10 @@ let emojiScore = $ref('')
 let copyLinkMessage = $ref('')
 let forceEntryError = $ref('')
 let fallingThroughChimney = $ref(false)
-let roomInfo: RoomInfo = $ref({value: {} as any})
+let roomInfo: RoomInfo = $ref([] as Player[])
 let cheater_ids: string[] = $ref([])
 let clicked = $ref(false)
+let roomFetched = $ref(false)
 let statSpan = $ref(7)
 
 let gameStartTime: Date;
@@ -318,9 +319,11 @@ function onUnMute () {
   playMusic();
 }
 
-function scrollBottom () {
-  const buttonContainer = document.getElementById('button-container');
-  setTimeout(() => buttonContainer?.scrollIntoView({behavior: "smooth", block: "center"}), 200)
+function scrollStats () {
+  setTimeout(() => {
+    const buttonContainer = document.querySelector('#player-stats-row:first-of-type');
+    buttonContainer?.scrollIntoView({behavior: "smooth", block: "start"});
+  }, 200)
 }
 
 function calculateMeanScore (player: Player) {
@@ -418,14 +421,14 @@ function calculateSpeed (player: Player) {
   return speedRate % 1 === 0 ? speedRate : Math.round(speedRate); 
 }
 
-function getPlayersInRange (players: Player[]) {
+function getPlayersInRange (players: Player[]): any[] {
   let playersRaw = isProxy(players) ? toRaw(players) : players;
   let filteredPlayers = [];
 
   for (let player of playersRaw) {
     const guesses = player.room[0].guesses;
     const filteredGuesses = guesses.filter(guess => 
-        Math.round((Date.now() - Date.parse(guess.date)) / 86400000) <= (statSpan < 0 ? 9**9 : statSpan))
+        Math.round((Date.now() - Date.parse(guess.date)) / 86400000) < (statSpan < 0 ? 9**9 : statSpan))
 
     if (filteredGuesses[0]) {
       filteredPlayers.push({...player, 
@@ -471,7 +474,8 @@ function createEmojiScore (successGrid: string) {
 
 async function get_room_info() {
   const room = await axios.get(`https://server.arakibulasın.com/player/room/${room_id}`);
-  roomInfo.value = room.data;
+  roomFetched = true;
+  roomInfo = room.data;
 }
 
 async function login(reset=false) {
@@ -483,13 +487,6 @@ async function login(reset=false) {
     localStorage.setItem('private_id',newPrivateId);
     public_id = newPublicId;
     private_id = newPrivateId;
-  }
-}
-
-function process_room_info() {
-  if (isProxy(roomInfo.value)) {
-    const rawObject = toRaw(roomInfo.value);
-    return rawObject;
   }
 }
 
@@ -518,7 +515,7 @@ onMounted(() => {
           <form @submit.prevent="enterWaitingRoom">
             <label for="set-username">Oyuncu ismi</label>
             <input type="text" id="set-username" v-model="username" autocomplete="off" maxlength="40" required />
-            <button class="ready-button" @click="playMusic(); process_room_info();">Oyuna katıl</Button>
+            <button class="ready-button" @click="playMusic">Oyuna katıl</Button>
           </form>
           <div class="divider" />
           <button class="copy-button" @click="onCopyLink" :disabled="!!copyLinkMessage">
@@ -636,11 +633,12 @@ onMounted(() => {
       <div id="room-stats" v-if="gameState === GameState.WAITING || gameState === GameState.READY || gameState === GameState.SCORES">
         <div id="room-stats-wrapper">
           <header id="room-stats-description">Oda istatistikleri</header>
-          <div id="room-stats-info" v-if="roomInfo.value.length === 0">Bu odaya henüz balta girmemiş</div>
-          <div id="room-stats-info" v-else-if="getPlayersInRange(roomInfo.value).length === 0">Bu süre zarfında oynayan yok</div>
-          <table id ="room-stats-table" v-if="roomInfo.value.length">
+          <div id="room-stats-info" v-if="!roomFetched">Yükleniyor...</div>
+          <div id="room-stats-info" v-else-if="roomInfo.length === 0">Bu odaya henüz balta girmemiş</div>
+          <div id="room-stats-info" v-else-if="getPlayersInRange(roomInfo).length === 0">Bu süre zarfında oynayan yok</div>
+          <table id ="room-stats-table" v-if="roomInfo.length">
             <thead>
-              <tr id="room-stats-header">
+              <tr id="room-stats-header" v-if="getPlayersInRange(roomInfo).length > 0">
                 <th class="table-header">#</th>
                 <th class="table-header">İsim</th>
                 <th class="table-header">Oyun sayısı</th>
@@ -650,8 +648,9 @@ onMounted(() => {
               </tr>
             </thead>
             <tbody>
-              <tr id="player-stats-row" v-for="(player, index) in sortPlayers(getPlayersInRange(roomInfo.value))"
-              v-bind:class="cheater_ids.includes(player._id) ? 'cheater' : ''">
+              <tr id="player-stats-row" v-for="(player, index) in sortPlayers(getPlayersInRange(roomInfo))"
+              v-bind:class="cheater_ids.includes(player._id) ? 'cheater' : ''"
+              :key="player._id">
                 <td>
                   {{(index + 1 === 1 ? '🥇 ' : '')}}
                   {{(index + 1 === 2 ? '🥈 ' : '')}}
@@ -668,18 +667,22 @@ onMounted(() => {
                 </tr>            
             </tbody>
           </table>
-          <div id="button-container" v-if="roomInfo.value.length !== 0">
+          <div id="button-container" v-if="roomInfo.length !== 0">
             <button class="stats-button" 
               v-bind:class="(statSpan === 1 ? 'selected' : '')"
-              @click="() => {statSpan = 1; scrollBottom();}"
-            >Bugün</button>
+              @click="() => {statSpan = 1; scrollStats();}"
+            >Bugün
+            </button>
             <button class="stats-button" 
               v-bind:class="(statSpan === 7 ? 'selected' : '')"
-              @click="() => {statSpan = 7; scrollBottom();}"
-            >Bu hafta</button>
+              @click="() => {statSpan = 7; scrollStats();}"
+            >Bu hafta
+            </button>
             <button class="stats-button"
               v-bind:class="(statSpan < 0 ? 'selected' : '')"
-              @click="() => {statSpan = -1; scrollBottom();}">Baştan sona</button>
+              @click="() => {statSpan = -1; scrollStats();}">
+              Baştan sona
+            </button>
           </div>
         </div> 
       </div>
