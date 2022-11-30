@@ -428,7 +428,7 @@ function getPlayersInRange (players: Player[]): any[] {
   for (let player of playersRaw) {
     const guesses = player.room[0].guesses;
     const filteredGuesses = guesses.filter(guess => 
-        Math.round((Date.now() - Date.parse(guess.date)) / 86400000) < (statSpan < 0 ? 9**9 : statSpan))
+        (Date.now() - Date.parse(guess.date)) / 86400000 < (statSpan < 0 ? 9**9 : statSpan))
 
     if (filteredGuesses[0]) {
       filteredPlayers.push({...player, 
