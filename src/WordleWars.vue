@@ -277,7 +277,7 @@ function onForceEntry () {
   let readyCount = 1;
   let playerCount = othersPresence.length + 1;
   for (let player of othersPresence) {
-    if (['ready', 'playing'].includes(player.stage)) {
+    if (['ready', 'playing', 'complete', 'scores'].includes(player.stage)) {
       readyCount += 1;
     }
   }
