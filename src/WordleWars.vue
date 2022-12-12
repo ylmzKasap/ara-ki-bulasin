@@ -355,8 +355,7 @@ function calculateMeanScore (player: Player) {
     guessSum += Number(guess.attempt)
   }
 
-  const gamesWithoutCheating = guesses.length - cheatCount;
-  const guessMean = gamesWithoutCheating ? guessSum / gamesWithoutCheating : 7;
+  const guessMean = guesses.length ? (guessSum + (cheatCount * 6)) / guesses.length  : 7;
 
   return guessMean % 1 === 0 ? guessMean : guessMean.toFixed(2);  
 }
