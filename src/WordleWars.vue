@@ -648,7 +648,11 @@ onMounted(() => {
             </thead>
             <tbody>
               <tr id="player-stats-row" v-for="(player, index) in sortPlayers(getPlayersInRange(roomInfo))"
-              v-bind:class="cheater_ids.includes(player._id) ? 'cheater' : ''"
+              v-bind:class="cheater_ids.includes(player._id) 
+                ? 'cheater' 
+                : player._id === public_id
+                ? 'this-is-your-row'
+                : ''"
               :key="player._id">
                 <td>
                   {{(index + 1 === 1 ? '🥇 ' : '')}}
@@ -1090,6 +1094,14 @@ h2 {
 .this-is-you {
   font-weight: bold;
   letter-spacing: 0.05rem;
+}
+
+.this-is-your-row {
+  background-color: rgb(129, 240, 137) !important;
+}
+
+.dark .this-is-your-row {
+  background-color: rgb(7, 168, 79) !important;
 }
 
 .cheater-label {
