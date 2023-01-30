@@ -3,10 +3,10 @@ import { LetterState, OtherUser } from '../types'
 
 export function sortUsers (arr: OtherUser[]) {
   return arr.sort((a: OtherUser, b: OtherUser) => {
-    if (!b.score) {
+    if (!b.score || b.cheat) {
       return -1
     }
-    if (!a.score) {
+    if (!a.score || a.cheat) {
       return 1
     }
     const correctSort = b.score[LetterState.CORRECT] - a.score[LetterState.CORRECT]

@@ -103,6 +103,32 @@ const gameEvents: { [key in GameState]?: () => void } = {
   // Move to intro when connected to presence and scores
   [GameState.CONNECTING]: () => {
     if (myPresence?.value && savedScores?.value()) {
+      get_room_info().then((res) => {
+        const roomData = res.data as Player[];
+        const allScores = savedScores.value()?.toArray()!;
+        roomInfo = roomData;
+        roomFetched = true;
+
+        for (let player of roomData) {
+          const thisRoom = player.room.find(d => d.id === room_id);
+          if (!thisRoom) continue;
+          
+          const currentDate = new Date(Date.now()).toLocaleDateString('en-US');
+          const todaysGame = thisRoom.guesses.find(g => g.date === currentDate);
+          if (!todaysGame) continue;
+
+          if (todaysGame.cheat) {
+            const currentPlayer = allScores.filter(p => p.id === player._id);
+            if (!currentPlayer) continue;
+
+            for (let playerInstance of currentPlayer) {
+              if (playerInstance.cheat) continue;
+              playerInstance.cheat = true;
+            }
+          } 
+        }
+      });
+      login();
       updateGameStage(GameState.INTRO)
     }
   },
@@ -111,7 +137,14 @@ const gameEvents: { [key in GameState]?: () => void } = {
   // When connected, if scores for current word found, show scores
   [GameState.INTRO]: () => {
     if (savedScores?.value()?.toArray().length) {
-      updateGameStage(GameState.SCORES)
+      const myFinishedGame = savedScores?.value()?.toArray().find(p => p.id === public_id);
+      
+      if (myFinishedGame || savedScores?.value()?.toArray().length! >= 10) {
+        updateGameStage(GameState.SCORES)
+      }
+      setInterval(() => get_room_info().then(res => {
+        roomInfo = res.data;
+      }), 15000);
     }
   },
 
@@ -132,7 +165,9 @@ const gameEvents: { [key in GameState]?: () => void } = {
   [GameState.COMPLETE]: () => {
     if (allInStages([GameState.SCORES, GameState.COMPLETE, GameState.WAITING])) {
       updateGameStage(GameState.SCORES);
-      setTimeout(() => get_room_info(), 1000);
+      setTimeout(() => get_room_info().then((res) => {
+        roomInfo = res.data;
+      }), 1000);
     }
   }
 }
@@ -179,12 +214,14 @@ function allInStages (stages: GameState[]) {
 // Enter the waiting room, set default presence, once username chosen
 async function enterWaitingRoom () {
   updateMyPresence({
+    id: public_id,
     name: username,
     board: '',
     score: { [LetterState.ABSENT]: 0, [LetterState.CORRECT]: 0, [LetterState.PRESENT]: 0 },
     stage: gameState,
     rowsComplete: 0,
-    timeFinished: Infinity
+    timeFinished: Infinity,
+    cheat: false
   })
 
   updateGameStage(GameState.WAITING)
@@ -472,9 +509,7 @@ function createEmojiScore (successGrid: string) {
 }
 
 async function get_room_info() {
-  const room = await axios.get(`https://server.arakibulasın.com/player/room/${room_id}`);
-  roomFetched = true;
-  roomInfo = room.data;
+  return await axios.get(`https://server.arakibulasın.com/player/room/${room_id}`);
 }
 
 async function login(reset=false) {
@@ -488,11 +523,6 @@ async function login(reset=false) {
     private_id = newPrivateId;
   }
 }
-
-onMounted(() => {
-  get_room_info();
-  login();
-})
 
 </script>
 
@@ -617,7 +647,7 @@ onMounted(() => {
               <span>Doğru cevap: <strong class="tracking-wider">{{ answer.toLocaleUpperCase('TR') }}</strong></span>
             </h2>
             <div class="divider" />
-            <div class="scores-grid">
+            <div class="scores-grid" :key="roomInfo">
               <MiniBoardScore v-for="(other, index) in sortUsers(savedScores().toArray())" :user="other" :position="index + 1" :showLetters="true" />
             </div>
             <div class="divider" />

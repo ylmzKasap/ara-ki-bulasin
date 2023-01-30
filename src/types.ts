@@ -15,10 +15,12 @@ export type OtherScore = {
 }
 
 export type OtherUser = {
+  id: string
   name: string
   board: string
   score: OtherScore
   stage: GameState
+  cheat: boolean
   rowsComplete: number
   timeFinished: number
 }

@@ -28,7 +28,8 @@ const currentBoard = $computed(() => {
 <template>
   <div>
     <slot />
-    <div class="mini-board">
+    <div class="mini-board" v-bind:class="user.cheat ? 'cheat-game' : ''">
+      <div class="cheater-label" v-if="user.cheat">hileci rezil</div>
       <div
         v-for="row in currentBoard"
         class="mini-board-row"
@@ -39,7 +40,7 @@ const currentBoard = $computed(() => {
         >
           <div class="front mini-board-tile-unset"  :style="{ transitionDelay: `${index * 300}ms` }" />
           <div
-            :class="['back', tile.state]"
+            :class="['back', tile.state === 'correct' ? user.cheat ? 'cheating-tile' : tile.state : tile.state]"
             :style="{
               transitionDelay: `${index * 300}ms`,
               animationDelay: `${index * 100}ms`
@@ -125,6 +126,41 @@ const currentBoard = $computed(() => {
 .mini-board-tile.revealed .back {
   transform: rotateX(0deg);
   border-radius: var(--border-radius);
+}
 
+.cheat-game {
+  position: relative;
+}
+
+.cheat-game >.mini-board-row {
+  opacity: 0.5;
+}
+
+.cheater-label {
+  position: absolute;
+  background-color: rgb(52, 52, 52);
+  z-index: 2;
+  transform: rotate(45deg) translate(-50%, -50%);
+  top: 72%;
+  left: 36%;
+  text-align: center;
+  width: 200px;
+  color: red;
+  font-weight: bold;
+  letter-spacing: 0.03rem;
+  padding: 5px;
+  border-radius: 16px;
+  box-shadow: rgb(79, 79, 79) 0px 0px 6px;
+}
+
+.dark .cheater-label {
+  background-color: rgb(227, 25, 18);
+  box-shadow: white 0px 0px 6px;
+  color: white;
+}
+
+.cheating-tile {
+  background-color: rgb(225, 38, 38);
+  color: white;
 }
 </style>
