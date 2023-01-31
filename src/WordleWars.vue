@@ -127,9 +127,11 @@ const gameEvents: { [key in GameState]?: () => void } = {
             }
           } 
         }
-      });
+        updateGameStage(GameState.INTRO)
+      }).catch(() => {
+        updateGameStage(GameState.INTRO)
+      })
       login();
-      updateGameStage(GameState.INTRO)
     }
   },
 
@@ -318,13 +320,29 @@ function onForceEntry () {
       readyCount += 1;
     }
   }
+
+  setTimeout(() => {
+      forceEntryError = ''
+    }, 2000)
   
   if (readyCount / playerCount < 0.75 || playerCount === 1) {
     forceEntryError = 'Hele biraz bekle'
-    setTimeout(() => {
-      forceEntryError = ''
-    }, 2000)
     return;
+  }
+
+  const meInOtherPlayers = othersPresence.find(p => p!.id === public_id);
+  if (meInOtherPlayers) {
+    if (['playing', 'complete', 'scores'].includes(meInOtherPlayers.stage)) {
+      forceEntryError = "Zaten oyundasın ?!"
+      return
+    }
+  }
+
+  const savedPlayers = savedScores?.value()?.toArray()
+  const meInSavedScores = savedPlayers?.find(p => p.id === public_id)
+  if (meInSavedScores) {
+    forceEntryError = 'Zaten oynamışsın ?!'
+    return
   }
   
   fallingThroughChimney = true
