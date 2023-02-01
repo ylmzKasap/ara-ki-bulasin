@@ -50,6 +50,10 @@ let forceEntryError = $ref('')
 let fallingThroughChimney = $ref(false)
 let roomInfo: RoomInfo = $ref([] as Player[])
 let cheater_ids: string[] = $ref([])
+let playerToMerge = $ref({
+  id: '',
+  name: ''
+})
 let clicked = $ref(false)
 let roomFetched = $ref(false)
 let isAdmin = $ref(false)
@@ -408,6 +412,34 @@ function scrollStats () {
   }, 200)
 }
 
+function handleMergeClick (player: Player) {
+  if (!isAdmin || player._id === public_id) return;
+
+  if (playerToMerge.id === player._id) {
+    playerToMerge = {id: '', name: ''};
+    return;
+  }
+
+  if (playerToMerge.id) {
+    if (window.confirm(`Merge ${playerToMerge.name} and ${player.name}?`)) {
+      axios.put(`${serverUrl}/player/admin_merge`, {
+        public_id_to_merge: playerToMerge.id,
+        public_id_to_be_merged: player._id,
+        admin_id: private_id
+      }).then(() => {
+        get_room_info().then(res => {
+          roomInfo = res.data;
+        })
+      })
+      playerToMerge = {id: '', name: ''};
+    } else {
+      playerToMerge = {id: '', name: ''};
+    }
+  } else {
+    playerToMerge = {id: player._id, name: player.name};
+  }
+}
+
 function handleCheat (player: Player, cheating: boolean) {
   if (window.confirm(`${player.name} adlı oyuncu hileci olarak işaretlenecek'`)) {
     const currentDate = new Date(Date.now()).toLocaleDateString('en-US');
@@ -751,7 +783,9 @@ async function login(reset=false) {
             </thead>
             <tbody>
               <tr id="player-stats-row" v-for="(player, index) in sortPlayers(getPlayersInRange(roomInfo))"
-              v-bind:class="cheater_ids.includes(player._id) 
+              v-bind:class="playerToMerge.id === player._id
+                ? 'selected-player'
+                : cheater_ids.includes(player._id) 
                 ? 'cheater' 
                 : player._id === public_id
                 ? 'this-is-your-row'
@@ -763,8 +797,10 @@ async function login(reset=false) {
                   {{(index + 1 === 3 ? '🥉 ' : '')}}
                   {{index + 1}}</td>
                 <td>
-                  {{player.name}}
-                  <span class="this-is-you" v-if="player._id === public_id">(siz)</span>
+                  <span class="player-name-row" v-bind:class="(isAdmin && player._id !== public_id) ? 'clickable' : ''" @click="handleMergeClick(player)"> 
+                    {{player.name}} 
+                  </span>
+                  <span class="this-is-you" v-if="player._id === public_id"> (siz)</span>
                   <span class="cheater-label" v-if="cheater_ids.includes(player._id)"> (hileci)</span>
                   <i class="fa-solid fa-skull" v-if="isAdmin && statSpan === 1 && !cheater_ids.includes(player._id)" @click="handleCheat(player, true)"></i>
                   <i class="fa-solid fa-rotate-left" v-if="isAdmin && statSpan === 1 && cheater_ids.includes(player._id)" @click="handleCheat(player, false)"></i>
@@ -1090,6 +1126,10 @@ h2 {
   width: 70%;
 }
 
+.player-name-row.clickable {
+  cursor: pointer;
+}
+
 #room-stats-wrapper {
   height: auto;
   width: 70%;
@@ -1179,15 +1219,15 @@ h2 {
   width: 30%;
 }
 
-#player-stats-row :nth-child(3), #player-stats-row :nth-child(4) {
+#player-stats-row >:nth-child(3), #player-stats-row >:nth-child(4) {
   width: 15%;
 }
 
-#player-stats-row :nth-child(5) {
+#player-stats-row >:nth-child(5) {
   width: 15%;
 }
 
-#player-stats-row :nth-child(6) {
+#player-stats-row >:nth-child(6) {
   width: 15%;
 }
 
@@ -1215,6 +1255,10 @@ h2 {
 .cheater-label {
   font-weight: bold;
   letter-spacing: 0.05rem;
+}
+
+.selected-player {
+  background-color: rgb(189, 189, 2) !important;
 }
 
 #room-stats-header {
