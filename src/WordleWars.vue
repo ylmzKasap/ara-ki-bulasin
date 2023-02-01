@@ -36,6 +36,7 @@ const room_id = params.get('room');
 
 const maxUsernameLength = 40;
 const savedUsername = localStorage.getItem('username') || '';
+const serverUrl = import.meta.env.MODE === 'production' ? 'https://server.arakibulasın.com' : '/api'
 
 let gameState: GameState = $ref(GameState.CONNECTING)
 let username = $ref(savedUsername.length <= maxUsernameLength ? savedUsername : '')
@@ -51,6 +52,7 @@ let roomInfo: RoomInfo = $ref([] as Player[])
 let cheater_ids: string[] = $ref([])
 let clicked = $ref(false)
 let roomFetched = $ref(false)
+let isAdmin = $ref(false)
 let statSpan = $ref(7)
 
 let gameStartTime: Date;
@@ -103,6 +105,7 @@ const gameEvents: { [key in GameState]?: () => void } = {
   // Move to intro when connected to presence and scores
   [GameState.CONNECTING]: () => {
     if (myPresence?.value && savedScores?.value()) {
+      const fetchTimeout = window.setTimeout(() => updateGameStage(GameState.INTRO), 4000);
       get_room_info().then((res) => {
         const roomData = res.data as Player[];
         const allScores = savedScores.value()?.toArray()!;
@@ -127,8 +130,10 @@ const gameEvents: { [key in GameState]?: () => void } = {
             }
           } 
         }
+        window.clearTimeout(fetchTimeout)
         updateGameStage(GameState.INTRO)
       }).catch(() => {
+        window.clearTimeout(fetchTimeout)
         updateGameStage(GameState.INTRO)
       })
       login();
@@ -234,7 +239,7 @@ async function enterWaitingRoom () {
   }
   
   try {
-    await axios.put('https://server.arakibulasın.com/player/name', {
+    await axios.put(`${serverUrl}/player/name`, {
     private_id: private_id,
     name: username
   })
@@ -284,7 +289,7 @@ async function onGameComplete ({ success, successGrid }: GameCompleteProps) {
   let timeFound = (gameEndTime.valueOf() - gameStartTime.valueOf()) / 1000;
 
   try {
-    await axios.put('https://server.arakibulasın.com/player/guess', {
+    await axios.put(`${serverUrl}/player/guess`, {
     private_id: private_id,
     alias: username,
     room_id: room_id,
@@ -295,7 +300,6 @@ async function onGameComplete ({ success, successGrid }: GameCompleteProps) {
   } catch {
     console.log('Bugünlük bu kadar, bay bay')
   }
-  
 }
 
 
@@ -379,6 +383,18 @@ function scrollStats () {
     const buttonContainer = document.querySelector('#player-stats-row:first-of-type');
     buttonContainer?.scrollIntoView({behavior: "smooth", block: "start"});
   }, 200)
+}
+
+function handleCheat (player: Player) {
+  if (window.confirm(`${player.name} adlı oyuncu hileci olarak işaretlenecek'`)) {
+    const currentDate = new Date(Date.now()).toLocaleDateString('en-US');
+    axios.put(`${serverUrl}/player/cheat`, { 
+      admin_id: private_id,
+      cheater_public_id: player._id,
+      room_id: room_id,
+      game_date: currentDate
+    });
+  }
 }
 
 function calculateMeanScore (player: Player) {
@@ -527,18 +543,24 @@ function createEmojiScore (successGrid: string) {
 }
 
 async function get_room_info() {
-  return await axios.get(`https://server.arakibulasın.com/player/room/${room_id}`);
+  return await axios.get(`${serverUrl}/player/room/${room_id}`);
 }
 
 async function login(reset=false) {
   if ((!public_id || !private_id) || reset) {
-    const newPlayer = await axios.post('https://server.arakibulasın.com/player');
+    const newPlayer = await axios.post(`${serverUrl}/player`);
     const newPublicId = newPlayer.data.public_id;
     const newPrivateId = newPlayer.data.private_id;
     localStorage.setItem('public_id', newPublicId);
     localStorage.setItem('private_id',newPrivateId);
     public_id = newPublicId;
     private_id = newPrivateId;
+  } else {
+    axios.get(`${serverUrl}/player/is_admin/${private_id}`)
+      .then(res => {
+        isAdmin = res.data.is_admin
+      })
+      .catch(() => null)
   }
 }
 
@@ -707,13 +729,15 @@ async function login(reset=false) {
                   {{(index + 1 === 2 ? '🥈 ' : '')}}
                   {{(index + 1 === 3 ? '🥉 ' : '')}}
                   {{index + 1}}</td>
-                <td>{{player.name}}
+                <td>
+                  {{player.name}}
                   <span class="this-is-you" v-if="player._id === public_id">(siz)</span>
                   <span class="cheater-label" v-if="cheater_ids.includes(player._id)"> (hileci)</span>
+                  <i class="fa-solid fa-skull" v-if="isAdmin && statSpan === 1" @click="handleCheat(player)"></i>
                 </td>
                 <td>{{player.room[0].guesses.length}}</td> 
                 <td>{{calculateMeanScore(player) === 7 ? 'yok' : calculateMeanScore(player)}}</td> 
-                <td>%{{calculateSuccess(player)}}</td>    
+                <td>%{{calculateSuccess(player)}}</td>
                 <td>{{calculateSpeed(player) === 0 ? 'yok' : calculateSpeed(player) + 's'}}</td>    
                 </tr>            
             </tbody>
@@ -1088,6 +1112,7 @@ h2 {
   color: black;
   text-align: center;
   padding: 10px;
+  position: relative;
 }
 
 #player-stats-row:nth-child(even) {
@@ -1111,11 +1136,11 @@ h2 {
   background-color: #fafafa;
 }
 
-#player-stats-row :nth-child(1) {
+#player-stats-row >:nth-child(1) {
   width: 10%;
 }
 
-#player-stats-row :nth-child(2) {
+#player-stats-row >:nth-child(2) {
   width: 30%;
 }
 
@@ -1233,6 +1258,15 @@ h2 {
   margin-right: 10px;
 }
 
+.fa-skull {
+  cursor: pointer;
+  position: absolute;
+  right: 0px;
+}
+
+.fa-skull:active {
+  transform: scale(0.96);
+}
 
 .fade-scores-enter-active,
 .fade-scores-leave-active,
