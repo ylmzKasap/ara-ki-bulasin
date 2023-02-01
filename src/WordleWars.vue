@@ -109,6 +109,10 @@ const gameEvents: { [key in GameState]?: () => void } = {
       get_room_info().then((res) => {
         const roomData = res.data as Player[];
         const allScores = savedScores.value()?.toArray()!;
+        const myGameInScores = allScores?.find(g => g.id === public_id);
+        if (myGameInScores) {
+          updateMyPresence({name: myGameInScores.name})
+        }
         roomInfo = roomData;
         roomFetched = true;
 
@@ -131,10 +135,14 @@ const gameEvents: { [key in GameState]?: () => void } = {
           } 
         }
         window.clearTimeout(fetchTimeout)
-        updateGameStage(GameState.INTRO)
+        if (gameState === GameState.CONNECTING) {
+          updateGameStage(GameState.INTRO)
+        }
       }).catch(() => {
         window.clearTimeout(fetchTimeout)
-        updateGameStage(GameState.INTRO)
+        if (gameState === GameState.CONNECTING) {
+          updateGameStage(GameState.INTRO)
+        }
       })
       login();
     }
@@ -146,7 +154,7 @@ const gameEvents: { [key in GameState]?: () => void } = {
     if (savedScores?.value()?.toArray().length) {
       const myFinishedGame = savedScores?.value()?.toArray().find(p => p.id === public_id);
       
-      if (myFinishedGame || savedScores?.value()?.toArray().length! >= 10) {
+      if (myFinishedGame || savedScores?.value()?.toArray().length! >= 20) {
         updateGameStage(GameState.SCORES)
       }
       setInterval(() => get_room_info().then(res => {
@@ -158,7 +166,7 @@ const gameEvents: { [key in GameState]?: () => void } = {
   // READY stage starts after ready button pressed
   // When all users are in the READY or PLAYING stages, start game
   [GameState.READY]: () => {
-    if (allInStages([GameState.READY, GameState.PLAYING])) {
+    if (allInStages([GameState.READY, GameState.PLAYING, GameState.SCORES, GameState.COMPLETE])) {
       startAnimation = true
       setTimeout(() => {
         startAnimation = false
@@ -219,7 +227,7 @@ function allInStages (stages: GameState[]) {
 // EVENT FUNCTIONS
 
 // Enter the waiting room, set default presence, once username chosen
-async function enterWaitingRoom () {
+async function enterWaitingRoom () {  
   updateMyPresence({
     id: public_id,
     name: username,
@@ -378,6 +386,21 @@ function onUnMute () {
   playMusic();
 }
 
+function getGameStateMessage (gameState: string) {
+  switch(gameState) {
+    case GameState.READY:
+      return 'Hazır'
+    case GameState.PLAYING:
+      return 'Oyunda'
+    case GameState.COMPLETE:
+      return 'Bitirdi'
+    case GameState.SCORES:
+      return 'Bakınıyor'
+    default:
+      return 'Bekliyor'
+  }
+}
+
 function scrollStats () {
   setTimeout(() => {
     const buttonContainer = document.querySelector('#player-stats-row:first-of-type');
@@ -385,15 +408,25 @@ function scrollStats () {
   }, 200)
 }
 
-function handleCheat (player: Player) {
+function handleCheat (player: Player, cheating: boolean) {
   if (window.confirm(`${player.name} adlı oyuncu hileci olarak işaretlenecek'`)) {
     const currentDate = new Date(Date.now()).toLocaleDateString('en-US');
     axios.put(`${serverUrl}/player/cheat`, { 
       admin_id: private_id,
       cheater_public_id: player._id,
       room_id: room_id,
-      game_date: currentDate
-    });
+      game_date: currentDate,
+      is_cheat: cheating
+    })
+    .then(() => get_room_info().then(res => {
+      if (isAdmin && !cheating) {
+      const cheaterIndex = cheater_ids.findIndex(x => x === player._id);
+      if (cheaterIndex > -1) {
+        cheater_ids.splice(cheaterIndex, 1)
+      }
+    }
+      roomInfo = res.data;
+    }))
   }
 }
 
@@ -606,14 +639,14 @@ async function login(reset=false) {
             <div class="waiting-player">
               <span class="player-name">{{ myPresence.name }} (siz)</span>
               <div :class="[myPresence.stage === GameState.READY ? 'waiting-player-ready' : 'waiting-player-waiting']">
-                {{ myPresence.stage === GameState.READY ? 'Hazır' : 'Bekliyor' }}
+                {{ getGameStateMessage(gameState) }}
               </div>
             </div>
             <div v-for="other in othersPresence" class="waiting-player">
               <span v-if="other.name" class="player-name">{{ other.name }}</span>
               <span v-else><i>İsim seçiyor...</i></span>
               <div :class="[other.stage === GameState.WAITING || other.stage === GameState.INTRO ? 'waiting-player-waiting' : 'waiting-player-ready']">
-                {{ other.stage === GameState.READY ? 'Hazır' : other.stage === GameState.PLAYING ? 'Oyunda' : 'Bekliyor' }}
+                {{ getGameStateMessage(other.stage) }}
               </div>
             </div>
             <button 
@@ -733,7 +766,8 @@ async function login(reset=false) {
                   {{player.name}}
                   <span class="this-is-you" v-if="player._id === public_id">(siz)</span>
                   <span class="cheater-label" v-if="cheater_ids.includes(player._id)"> (hileci)</span>
-                  <i class="fa-solid fa-skull" v-if="isAdmin && statSpan === 1" @click="handleCheat(player)"></i>
+                  <i class="fa-solid fa-skull" v-if="isAdmin && statSpan === 1 && !cheater_ids.includes(player._id)" @click="handleCheat(player, true)"></i>
+                  <i class="fa-solid fa-rotate-left" v-if="isAdmin && statSpan === 1 && cheater_ids.includes(player._id)" @click="handleCheat(player, false)"></i>
                 </td>
                 <td>{{player.room[0].guesses.length}}</td> 
                 <td>{{calculateMeanScore(player) === 7 ? 'yok' : calculateMeanScore(player)}}</td> 
@@ -987,6 +1021,7 @@ h2 {
 
 .waiting-player-waiting, .waiting-player-ready {
   font-weight: 600;
+  text-align: end;
 }
 
 .waiting-player-message {
@@ -1258,13 +1293,13 @@ h2 {
   margin-right: 10px;
 }
 
-.fa-skull {
+.fa-skull, .fa-rotate-left {
   cursor: pointer;
   position: absolute;
   right: 0px;
 }
 
-.fa-skull:active {
+.fa-skull:active, .fa-rotate-left:active {
   transform: scale(0.96);
 }
 
