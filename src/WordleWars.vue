@@ -478,7 +478,7 @@ function calculateMeanScore (player: Player) {
     if (guess.cheat) {
       if (!cheatedRecently) {
         let hoursSinceCheat = Math.round((Date.now() - Date.parse(guess.date)) / 3600000);
-        if (hoursSinceCheat < 72) {
+        if (hoursSinceCheat < 24) {
           cheatedRecently = true;
           if (!cheater_ids.includes(player._id)) {
             cheater_ids.push(player._id);
