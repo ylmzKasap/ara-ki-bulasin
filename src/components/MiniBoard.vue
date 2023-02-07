@@ -9,6 +9,9 @@ const { user, rows = 6, large = false, showLetters = false } = defineProps<{
 }>()
 
 const [fontSize, boxSize] = large ? ['32px', '47px'] : ['16px', '25px']
+const cheaterTitles = [
+  'über zekâ', 'ultra sonik', 'aynştayn', 'ara ki bul', '800 IQ', 'medyum memiş', 'beyin bedava',
+  'ulvi zat', 'wordle lordu', '%100 alın teri', 'mübarek insan', 'Oxford terk', 'zaman yolcusu']
 
 const emptyBoard = $ref(
   Array.from({ length: 6 }, () =>
@@ -29,7 +32,7 @@ const currentBoard = $computed(() => {
   <div>
     <slot />
     <div class="mini-board" v-bind:class="user.cheat ? 'cheat-game' : ''">
-      <div class="cheater-label" v-if="user.cheat">hileci rezil</div>
+      <div class="cheater-label" v-if="user.cheat">{{cheaterTitles[Math.floor(Math.random()*cheaterTitles.length)]}}</div>
       <div
         v-for="row in currentBoard"
         class="mini-board-row"
@@ -138,14 +141,14 @@ const currentBoard = $computed(() => {
 
 .cheater-label {
   position: absolute;
-  background-color: rgb(52, 52, 52);
+  background-color: rgb(51, 51, 51);
   z-index: 2;
   transform: rotate(45deg) translate(-50%, -50%);
-  top: 72%;
-  left: 36%;
+  top: 65%;
+  left: 30%;
   text-align: center;
   width: 200px;
-  color: red;
+  color: rgb(234, 255, 0);
   font-weight: bold;
   letter-spacing: 0.03rem;
   padding: 5px;
@@ -154,8 +157,8 @@ const currentBoard = $computed(() => {
 }
 
 .dark .cheater-label {
-  background-color: rgb(227, 25, 18);
-  box-shadow: white 0px 0px 6px;
+  background-color: rgb(227, 112, 18);
+  box-shadow: white 0px 0px 4px;
   color: white;
 }
 

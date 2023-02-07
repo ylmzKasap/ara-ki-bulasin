@@ -752,7 +752,7 @@ async function login(reset=false) {
               <span>Doğru cevap: <strong class="tracking-wider">{{ answer.toLocaleUpperCase('TR') }}</strong></span>
             </h2>
             <div class="divider" />
-            <div class="scores-grid" :key="roomInfo">
+            <div class="scores-grid">
               <MiniBoardScore v-for="(other, index) in sortUsers(savedScores().toArray())" :user="other" :position="index + 1" :showLetters="true" />
             </div>
             <div class="divider" />
