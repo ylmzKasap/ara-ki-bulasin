@@ -286,8 +286,11 @@ async function onGameComplete ({ success, successGrid }: GameCompleteProps) {
     return
   }
 
+  let gameEndTime = new Date();
+  let timeFound = (gameEndTime.valueOf() - gameStartTime.valueOf()) / 1000;
+
   updateGameStage(GameState.COMPLETE)
-  let updatedPresence: { timeFinished: number, score?: {} } = { timeFinished: Number(Date.now()) }
+  let updatedPresence: { timeFinished: number, score?: {} } = { timeFinished: timeFound }
   if (success) {
     updatedPresence = { ...updatedPresence, score: { ...myPresence.value.score, [LetterState.CORRECT]: 5 }}
     confettiAnimation = true
@@ -296,9 +299,6 @@ async function onGameComplete ({ success, successGrid }: GameCompleteProps) {
   updateMyPresence(updatedPresence)
   savedScores.value()!.push(myPresence.value as OtherUser)
   emojiScore = createEmojiScore(successGrid || '')
-
-  let gameEndTime = new Date();
-  let timeFound = (gameEndTime.valueOf() - gameStartTime.valueOf()) / 1000;
 
   try {
     await axios.put(`${serverUrl}/player/guess`, {
@@ -478,7 +478,7 @@ function calculateMeanScore (player: Player) {
     if (guess.cheat) {
       if (!cheatedRecently) {
         let hoursSinceCheat = Math.round((Date.now() - Date.parse(guess.date)) / 3600000);
-        if (hoursSinceCheat < 24) {
+        if (hoursSinceCheat <= 24) {
           cheatedRecently = true;
           if (!cheater_ids.includes(player._id)) {
             cheater_ids.push(player._id);
