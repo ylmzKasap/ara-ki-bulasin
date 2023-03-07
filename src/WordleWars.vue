@@ -578,6 +578,7 @@ function sortPlayers (players: Player[]) {
   let playersRaw = isProxy(players) ? toRaw(players) : players;
 
   return playersRaw.sort((a, b) => {
+    if (cheater_ids.includes(a._id)) return 1
     if (calculateMeanScore(a) < calculateMeanScore(b)) {
       return -1;
     } else if (calculateMeanScore(a) > calculateMeanScore(b)) {
