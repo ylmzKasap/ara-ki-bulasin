@@ -462,6 +462,19 @@ function handleCheat (player: Player, cheating: boolean) {
   }
 }
 
+function handleDelete (player: Player) {
+  if (window.confirm(`${player.name} adlı oyuncunun bu odadaki bilgileri silinecek'`)) {
+    axios.put(`${serverUrl}/player/delete_room`, { 
+      admin_id: private_id,
+      player_public_id: player._id,
+      room_id: room_id
+    })
+    .then(() => get_room_info().then(res => {
+      roomInfo = res.data;
+    }))
+  }
+}
+
 function calculateMeanScore (player: Player) {
   let playerRaw = isProxy(player) ? toRaw(player) : player;
 
@@ -805,6 +818,7 @@ async function login(reset=false) {
                   <span class="cheater-label" v-if="cheater_ids.includes(player._id)"> (hileci)</span>
                   <i class="fa-solid fa-skull" v-if="isAdmin && statSpan === 1 && !cheater_ids.includes(player._id)" @click="handleCheat(player, true)"></i>
                   <i class="fa-solid fa-rotate-left" v-if="isAdmin && statSpan === 1 && cheater_ids.includes(player._id)" @click="handleCheat(player, false)"></i>
+                  <i class="fa-solid fa-trash" v-if="isAdmin && statSpan === -1" @click="handleDelete(player)"></i>
                 </td>
                 <td>{{player.room[0].guesses.length}}</td> 
                 <td>{{calculateMeanScore(player) === 7 ? 'yok' : calculateMeanScore(player)}}</td> 
@@ -1338,7 +1352,7 @@ h2 {
   margin-right: 10px;
 }
 
-.fa-skull, .fa-rotate-left {
+.fa-skull, .fa-rotate-left, .fa-trash {
   cursor: pointer;
   position: absolute;
   right: 0px;
