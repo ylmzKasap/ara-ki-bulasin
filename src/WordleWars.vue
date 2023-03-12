@@ -67,6 +67,7 @@ let shareMessage = shareSupported ? 'Bağlantıyı paylaş' : 'Bağlantıyı kop
 const [myPresence, updateMyPresence] = useMyPresence()
 const others = useOthers()
 const savedScores = useList('scores-' + answer)
+const savedBoards = useList('boards-' + answer)
 let mixer = new Audio();
 let soundEnabled = $ref(localStorage.getItem('sound'));
 if (soundEnabled === null) {
@@ -165,6 +166,25 @@ const gameEvents: { [key in GameState]?: () => void } = {
         roomInfo = res.data;
       }), 15000);
     }
+    if (savedBoards?.value()?.toArray().length) {
+      const myAnswers = savedBoards?.value()?.toArray().filter(p => p.player_id === public_id);
+
+      if (myAnswers?.length) {
+        const sortedAnswers = myAnswers?.sort((a, b) => a.rowIndex - b.rowIndex)
+        const myBoard = sortedAnswers.map(a => a.currentRow);
+        const activeRow = myBoard.length;
+        if (myBoard.length >= 6) {
+          updateGameStage(GameState.SCORES);
+          return;
+        }
+        while (myBoard.length < 6) {
+          myBoard.push(Array.from({ length: 5 }, () => ({
+            letter: '',
+            state: LetterState.INITIAL
+        })))}
+        updateMyPresence({ board: myBoard, rowsComplete: activeRow })
+      }
+    }
   },
 
   // READY stage starts after ready button pressed
@@ -235,10 +255,10 @@ async function enterWaitingRoom () {
   updateMyPresence({
     id: public_id,
     name: username,
-    board: '',
+    board: myPresence?.value.board ? myPresence?.value.board : '',
     score: { [LetterState.ABSENT]: 0, [LetterState.CORRECT]: 0, [LetterState.PRESENT]: 0 },
     stage: gameState,
-    rowsComplete: 0,
+    rowsComplete: myPresence?.value.rowsComplete ? myPresence.value.rowsComplete : 0,
     timeFinished: Infinity,
     cheat: false
   })
@@ -277,6 +297,12 @@ function onLettersGuessed ({ letterStates, letterBoard }: LettersGuessedProps) {
     }
     return acc
   }, 0)
+
+  savedBoards?.value()!.push({
+    player_id: public_id,
+    currentRow: letterBoard[rowsComplete - 1],
+    rowIndex: rowsComplete - 1
+  });
   updateMyPresence({ score: currentScore, board: letterBoard, rowsComplete: rowsComplete })
 }
 
@@ -745,7 +771,7 @@ async function login(reset=false) {
 
       <div v-if="gameState === GameState.PLAYING || gameState === GameState.COMPLETE" id="playing">
         <MiniScores :sortedUsers="sortedUsers" :shrink="true" />
-        <Game :answer="answer" @lettersGuessed="onLettersGuessed" @gameComplete="onGameComplete">
+        <Game :answer="answer" :myPresence="myPresence" @lettersGuessed="onLettersGuessed" @gameComplete="onGameComplete">
           <template v-slot:board-left>
             <div class="mini-board-container">
               <MiniBoardPlaying v-for="other in othersFilterOdd(true)" :user="other" :showLetters="gameState === GameState.COMPLETE" />

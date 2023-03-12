@@ -2,19 +2,20 @@
 import { onUnmounted } from 'vue'
 import { allWords } from '../words'
 import Keyboard from './Keyboard.vue'
-import { GameCompleteProps, LettersGuessedProps, LettersGuessed, LetterState } from '../types'
+import { GameCompleteProps, LettersGuessedProps, LettersGuessed, LetterState, OtherUser } from '../types'
 
 const emit = defineEmits<{
   (e: 'lettersGuessed', key: LettersGuessedProps): void
   (e: 'gameComplete', key: GameCompleteProps): void
 }>()
 
-const { answer } = defineProps<{
-  answer: string
+const { answer, myPresence } = defineProps<{
+  answer: string,
+  myPresence: OtherUser
 }>()
 
 // Board state. Each tile is represented as { letter, state }
-const board = $ref(
+const board = $ref(myPresence.board ? myPresence.board :
   Array.from({ length: 6 }, () =>
     Array.from({ length: 5 }, () => ({
       letter: '',
@@ -24,7 +25,7 @@ const board = $ref(
 )
 
 // Current active row.
-let currentRowIndex = $ref(0)
+let currentRowIndex = $ref(myPresence.rowsComplete ? myPresence.rowsComplete : 0)
 const currentRow = $computed(() => board[currentRowIndex])
 
 // Feedback state: message and shake
