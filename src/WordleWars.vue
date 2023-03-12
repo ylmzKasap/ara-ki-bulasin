@@ -42,6 +42,7 @@ let gameState: GameState = $ref(GameState.CONNECTING)
 let username = $ref(savedUsername.length <= maxUsernameLength ? savedUsername : '')
 let public_id = $ref(localStorage.getItem('public_id') || '');
 let private_id = $ref(localStorage.getItem('private_id') || '');
+let connected = $ref(false)
 let startAnimation = $ref(false)
 let confettiAnimation = $ref(false)
 let emojiScore = $ref('')
@@ -166,7 +167,7 @@ const gameEvents: { [key in GameState]?: () => void } = {
         roomInfo = res.data;
       }), 15000);
     }
-    if (savedBoards?.value()?.toArray().length) {
+    if (savedBoards?.value()?.toArray().length && !connected) {
       const myAnswers = savedBoards?.value()?.toArray().filter(p => p.player_id === public_id);
 
       if (myAnswers?.length) {
@@ -182,9 +183,11 @@ const gameEvents: { [key in GameState]?: () => void } = {
             letter: '',
             state: LetterState.INITIAL
         })))}
+        console.log('y')
         updateMyPresence({ board: myBoard, rowsComplete: activeRow })
       }
     }
+    connected = true;
   },
 
   // READY stage starts after ready button pressed
