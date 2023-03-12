@@ -183,7 +183,6 @@ const gameEvents: { [key in GameState]?: () => void } = {
             letter: '',
             state: LetterState.INITIAL
         })))}
-        console.log('y')
         updateMyPresence({ board: myBoard, rowsComplete: activeRow })
       }
     }
