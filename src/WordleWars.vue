@@ -58,6 +58,7 @@ let playerToMerge = $ref({
 let clicked = $ref(false)
 let roomFetched = $ref(false)
 let isAdmin = $ref(false)
+let reEnterTimePenalty = $ref(0)
 let statSpan = $ref(7)
 
 let gameStartTime: Date;
@@ -178,6 +179,7 @@ const gameEvents: { [key in GameState]?: () => void } = {
           updateGameStage(GameState.SCORES);
           return;
         }
+        reEnterTimePenalty = myBoard.length * 50000;
         while (myBoard.length < 6) {
           myBoard.push(Array.from({ length: 5 }, () => ({
             letter: '',
@@ -228,6 +230,9 @@ function updateGameStage (stage: GameState) {
 
     if (gameState === GameState.PLAYING) {
       gameStartTime = new Date();
+      if (reEnterTimePenalty) {
+        gameStartTime = new Date(gameStartTime.getTime() - reEnterTimePenalty);
+      }
     }
 
     updateMyPresence({ stage })
@@ -369,7 +374,7 @@ function onForceEntry () {
       forceEntryError = ''
     }, 2000)
   
-  if (readyCount / playerCount < 0.75 || playerCount === 1) {
+  if (readyCount / playerCount < 0.75 || (playerCount === 1 && savedScores?.value()?.toArray().length === 0)) {
     forceEntryError = 'Hele biraz bekle'
     return;
   }
