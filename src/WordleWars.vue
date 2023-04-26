@@ -2,7 +2,7 @@
 import { isProxy, onMounted, reactive, toRaw, watchEffect } from 'vue'
 import axios from 'axios'
 import ConfettiExplosion from 'vue-confetti-explosion'
-import { GameCompleteProps, GameState, LettersGuessedProps, LetterState, OtherScore, OtherUser, Player, RoomInfo } from './types'
+import { GameCompleteProps, GameState, LettersGuessed, LettersGuessedProps, LetterState, OtherScore, OtherUser, Player, RoomInfo } from './types'
 import ExampleWrapper from './components/ExampleWrapper.vue'
 import MiniBoardPlaying from './components/MiniBoardPlaying.vue'
 import MiniBoardScore from './components/MiniBoardScore.vue'
@@ -60,6 +60,8 @@ let roomFetched = $ref(false)
 let isAdmin = $ref(false)
 let reEnterTimePenalty = $ref(0)
 let statSpan = $ref(7)
+// Keep track of revealed letters for the virtual keyboard
+let letterStates: LettersGuessed = $ref({})
 
 let gameStartTime: Date;
 const shareSupported = navigator.share !== undefined && isMobile()
@@ -174,6 +176,25 @@ const gameEvents: { [key in GameState]?: () => void } = {
       if (myAnswers?.length) {
         const sortedAnswers = myAnswers?.sort((a, b) => a.rowIndex - b.rowIndex)
         const myBoard = sortedAnswers.map(a => a.currentRow);
+        const myLetterStates: {[key:string]: LetterState} = {}
+        const stateScores = {'absent': 0, 'present': 1, 'correct': 2}
+
+        for (let row of myBoard) {
+          for (let letterState of row) {
+            if (letterState.letter) {
+              const existingLetter = myLetterStates[letterState.letter]
+              if (existingLetter) {
+                if (stateScores[existingLetter] > stateScores[letterState.state as keyof typeof stateScores]) {
+                  continue;
+                }
+              }
+              myLetterStates[letterState.letter] = letterState.state
+            }
+          }
+        }
+
+        letterStates = myLetterStates
+
         const activeRow = myBoard.length;
         if (myBoard.length >= 6) {
           updateGameStage(GameState.SCORES);
@@ -624,7 +645,7 @@ function sortPlayers (players: Player[]) {
   let playersRaw = isProxy(players) ? toRaw(players) : players;
 
   return playersRaw.sort((a, b) => {
-    if (cheater_ids.includes(a._id)) return 1
+    if (cheater_ids.includes(a._id) && statSpan === 1) return 1
     if (calculateMeanScore(a) < calculateMeanScore(b)) {
       return -1;
     } else if (calculateMeanScore(a) > calculateMeanScore(b)) {
@@ -778,7 +799,7 @@ async function login(reset=false) {
 
       <div v-if="gameState === GameState.PLAYING || gameState === GameState.COMPLETE" id="playing">
         <MiniScores :sortedUsers="sortedUsers" :shrink="true" />
-        <Game :answer="answer" :myPresence="myPresence" @lettersGuessed="onLettersGuessed" @gameComplete="onGameComplete">
+        <Game :answer="answer" :myPresence="myPresence" :letterStates="letterStates" @lettersGuessed="onLettersGuessed" @gameComplete="onGameComplete">
           <template v-slot:board-left>
             <div class="mini-board-container">
               <MiniBoardPlaying v-for="other in othersFilterOdd(true)" :user="other" :showLetters="gameState === GameState.COMPLETE" />

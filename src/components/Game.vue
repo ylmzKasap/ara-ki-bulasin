@@ -9,9 +9,10 @@ const emit = defineEmits<{
   (e: 'gameComplete', key: GameCompleteProps): void
 }>()
 
-const { answer, myPresence } = defineProps<{
+const { answer, myPresence, letterStates } = defineProps<{
   answer: string,
-  myPresence: OtherUser
+  myPresence: OtherUser,
+  letterStates: LettersGuessed
 }>()
 
 // Board state. Each tile is represented as { letter, state }
@@ -33,9 +34,6 @@ let message = $ref('')
 let grid = $ref('')
 let shakeRowIndex = $ref(-1)
 let success = $ref(false)
-
-// Keep track of revealed letters for the virtual keyboard
-const letterStates: LettersGuessed = $ref({})
 
 // Handle keyboard input.
 let allowInput = true
