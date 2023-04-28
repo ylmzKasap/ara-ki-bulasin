@@ -7,6 +7,7 @@ import { GameCompleteProps, LettersGuessedProps, LettersGuessed, LetterState, Ot
 const emit = defineEmits<{
   (e: 'lettersGuessed', key: LettersGuessedProps): void
   (e: 'gameComplete', key: GameCompleteProps): void
+  (e: 'sendScores', key: {success: boolean}): void
 }>()
 
 const { answer, myPresence, letterStates } = defineProps<{
@@ -118,6 +119,7 @@ function completeRow () {
     allowInput = false
     if (currentRow.every((tile) => tile.state === LetterState.CORRECT)) {
       // yay!
+      emit('sendScores', { success: true });
       setTimeout(() => {
         grid = genResultGrid()
         showMessage(
@@ -137,6 +139,7 @@ function completeRow () {
       }, 1600)
     } else {
       // game over :(
+      emit('sendScores', { success: false });
       setTimeout(() => {
         showMessage(answer.toLocaleUpperCase('tr'), -1)
         emit('gameComplete', { success: false })

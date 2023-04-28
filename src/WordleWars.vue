@@ -2,7 +2,7 @@
 import { isProxy, onMounted, reactive, toRaw, watchEffect } from 'vue'
 import axios from 'axios'
 import ConfettiExplosion from 'vue-confetti-explosion'
-import { GameCompleteProps, GameState, LettersGuessed, LettersGuessedProps, LetterState, OtherScore, OtherUser, Player, RoomInfo } from './types'
+import { GameCompleteProps, GameState, LetterBoard, LettersGuessed, LettersGuessedProps, LetterState, OtherScore, OtherUser, Player, RoomInfo, SendScoreProps } from './types'
 import ExampleWrapper from './components/ExampleWrapper.vue'
 import MiniBoardPlaying from './components/MiniBoardPlaying.vue'
 import MiniBoardScore from './components/MiniBoardScore.vue'
@@ -180,6 +180,10 @@ const gameEvents: { [key in GameState]?: () => void } = {
         const stateScores = {'absent': 0, 'present': 1, 'correct': 2}
 
         for (let row of myBoard) {
+          if (row.every((x: LetterBoard) => x.state === 'correct')) {
+            updateGameStage(GameState.SCORES);
+            return;
+          }
           for (let letterState of row) {
             if (letterState.letter) {
               const existingLetter = myLetterStates[letterState.letter]
@@ -334,8 +338,7 @@ function onLettersGuessed ({ letterStates, letterBoard }: LettersGuessedProps) {
   updateMyPresence({ score: currentScore, board: letterBoard, rowsComplete: rowsComplete })
 }
 
-// When current player wins or loses game, celebrate, update score with ticks, await others winning
-async function onGameComplete ({ success, successGrid }: GameCompleteProps) {
+async function onSendScores ({success}: SendScoreProps) {
   if (!myPresence || !savedScores?.value) {
     return
   }
@@ -343,18 +346,14 @@ async function onGameComplete ({ success, successGrid }: GameCompleteProps) {
   let gameEndTime = new Date();
   let timeFound = (gameEndTime.valueOf() - gameStartTime.valueOf()) / 1000;
 
-  updateGameStage(GameState.COMPLETE)
-  let updatedPresence: { timeFinished: number, score?: {} } = { timeFinished: timeFound }
-  if (success) {
-    updatedPresence = { ...updatedPresence, score: { ...myPresence.value.score, [LetterState.CORRECT]: 5 }}
-    confettiAnimation = true
-    setTimeout(() => confettiAnimation = false, 3000)
-  }
-  updateMyPresence(updatedPresence)
-  savedScores.value()!.push(myPresence.value as OtherUser)
-  emojiScore = createEmojiScore(successGrid || '')
-
   try {
+    let updatedPresence: { timeFinished: number, score?: {} } = { timeFinished: timeFound }
+    if (success) {
+      updatedPresence = { ...updatedPresence, score: { ...myPresence.value.score, [LetterState.CORRECT]: 5 }}
+    }
+    updateMyPresence(updatedPresence)
+    savedScores.value()!.push(myPresence.value as OtherUser)
+
     await axios.put(`${serverUrl}/player/guess`, {
     private_id: private_id,
     alias: username,
@@ -366,6 +365,18 @@ async function onGameComplete ({ success, successGrid }: GameCompleteProps) {
   } catch {
     console.log('Bugünlük bu kadar, bay bay')
   }
+}
+
+// When current player wins or loses game, celebrate, update score with ticks, await others winning
+function onGameComplete ({ success, successGrid }: GameCompleteProps) {
+  if (!myPresence || !savedScores?.value) {
+    return
+  }
+
+  confettiAnimation = true
+  setTimeout(() => confettiAnimation = false, 3000)
+  updateGameStage(GameState.COMPLETE)
+  emojiScore = createEmojiScore(successGrid || '')
 }
 
 
@@ -799,7 +810,7 @@ async function login(reset=false) {
 
       <div v-if="gameState === GameState.PLAYING || gameState === GameState.COMPLETE" id="playing">
         <MiniScores :sortedUsers="sortedUsers" :shrink="true" />
-        <Game :answer="answer" :myPresence="myPresence" :letterStates="letterStates" @lettersGuessed="onLettersGuessed" @gameComplete="onGameComplete">
+        <Game :answer="answer" :myPresence="myPresence" :letterStates="letterStates" @lettersGuessed="onLettersGuessed" @gameComplete="onGameComplete" @sendScores="onSendScores">
           <template v-slot:board-left>
             <div class="mini-board-container">
               <MiniBoardPlaying v-for="other in othersFilterOdd(true)" :user="other" :showLetters="gameState === GameState.COMPLETE" />

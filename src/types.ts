@@ -66,3 +66,7 @@ export type GameCompleteProps = {
   success: boolean,
   successGrid?: string
 }
+
+export type SendScoreProps = {
+  success: boolean
+}
