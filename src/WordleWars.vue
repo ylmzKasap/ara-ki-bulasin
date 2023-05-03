@@ -875,7 +875,7 @@ async function login(reset=false) {
                   {{(index + 1 === 2 ? '🥈 ' : '')}}
                   {{(index + 1 === 3 ? '🥉 ' : '')}}
                   {{index + 1}}</td>
-                <td>
+                <td class="player-name-row-container">
                   <span class="player-name-row" v-bind:class="(isAdmin && player._id !== public_id) ? 'clickable' : ''" @click="handleMergeClick(player)"> 
                     {{player.name}} 
                   </span>
@@ -1206,6 +1206,11 @@ h2 {
   width: 70%;
 }
 
+.player-name-row-container {
+  max-width: 22vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .player-name-row.clickable {
   cursor: pointer;
 }
@@ -1262,6 +1267,10 @@ h2 {
 .stats-button.selected {
   background-color: #24b143;
 }
+
+#player-stats-row {
+    font-size: calc(0.3rem + 0.6vw + 0.6vh);
+  }
 
 #player-stats-row > td {
   color: black;
@@ -1439,10 +1448,6 @@ h2 {
   .table-header {
     font-size: 0.7rem;
   }
-
-  #player-stats-row {
-    font-size: 0.9rem;
-  }
 }
 
 @media (max-width: 415px) {
@@ -1457,19 +1462,11 @@ h2 {
   .table-header {
     font-size: 0.6rem;
   }
-
-  #player-stats-row {
-    font-size: 0.78rem;
-  }
 }
 
 @media (max-width: 330px) {
   .table-header {
     font-size: 0.5rem;
-  }
-
-  #player-stats-row {
-    font-size: 0.58rem;
   }
 }
 
