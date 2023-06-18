@@ -406,7 +406,7 @@ function onForceEntry () {
       forceEntryError = ''
     }, 2000)
   
-  if (readyCount / playerCount < 0.75 || (playerCount === 1 && savedScores?.value()?.toArray().length === 0)) {
+  if (readyCount / playerCount < 0.5 || (playerCount === 1 && savedScores?.value()?.toArray().length === 0)) {
     forceEntryError = 'Hele biraz bekle'
     return;
   }
