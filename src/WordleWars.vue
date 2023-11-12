@@ -355,7 +355,7 @@ async function onSendScores ({success}: SendScoreProps) {
     savedScores.value()!.push(myPresence.value as OtherUser)
 
     await axios.put(`${serverUrl}/player/guess`, {
-    private_id: private_id,
+    private_id: localStorage.getItem('private_id'),
     alias: username,
     room_id: room_id,
     attempt: `${myPresence.value.rowsComplete}`,
@@ -406,7 +406,7 @@ function onForceEntry () {
       forceEntryError = ''
     }, 2000)
   
-  if (readyCount / playerCount < 0.5 || (playerCount === 1 && savedScores?.value()?.toArray().length === 0)) {
+  if (readyCount / playerCount <= 0.5 || (playerCount === 1 && savedScores?.value()?.toArray().length === 0)) {
     forceEntryError = 'Hele biraz bekle'
     return;
   }
