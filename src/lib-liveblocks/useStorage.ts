@@ -7,7 +7,6 @@ import { roomSymbol } from './symbols'
  */
 export function useStorage (): Ref<() => LiveObject> {
   const room = inject<Room>(roomSymbol)
-  console.log(room);
   // @ts-ignore
   const rootRef = ref<() => LiveObject>(() => {})
 
