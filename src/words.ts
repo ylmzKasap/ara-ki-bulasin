@@ -5510,7 +5510,8 @@ const allowedGuesses = [
   'zırto',
   'cinso',
   'beyti',
-  'közlü'
+  'közlü',
+  'reflü'
 ]
 
 export const answers = [
