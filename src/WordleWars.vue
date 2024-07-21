@@ -59,7 +59,7 @@ let clicked = $ref(false)
 let roomFetched = $ref(false)
 let isAdmin = $ref(false)
 let reEnterTimePenalty = $ref(0)
-let statSpan = $ref(7)
+let statSpan = $ref(1)
 // Keep track of revealed letters for the virtual keyboard
 let letterStates: LettersGuessed = $ref({})
 
@@ -406,7 +406,7 @@ function onForceEntry () {
       forceEntryError = ''
     }, 2000)
   
-  if (readyCount / playerCount <= 0.5 || (playerCount === 1 && savedScores?.value()?.toArray().length === 0)) {
+  if (readyCount / playerCount <= 0.5) {
     forceEntryError = 'Hele biraz bekle'
     return;
   }
@@ -854,9 +854,9 @@ async function login(reset=false) {
               <tr id="room-stats-header" v-if="getPlayersInRange(roomInfo).length > 0">
                 <th class="table-header">#</th>
                 <th class="table-header">İsim</th>
-                <th class="table-header">Oyun sayısı</th>
-                <th class="table-header">Ortalama tahmin</th>
-                <th class="table-header">Başarı oranı</th>
+                <th class="table-header" v-if="statSpan !== 1">Oyun sayısı</th>
+                <th class="table-header">{{statSpan === 1 ? "Tahmin" : "Ortalama tahmin"}}</th>
+                <th class="table-header">{{statSpan === 1 ? "Buldu" : "Başarı oranı"}}</th>
                 <th class="table-header">Hız</th>
               </tr>
             </thead>
@@ -885,10 +885,11 @@ async function login(reset=false) {
                   <i class="fa-solid fa-rotate-left" v-if="isAdmin && statSpan === 1 && cheater_ids.includes(player._id)" @click="handleCheat(player, false)"></i>
                   <i class="fa-solid fa-trash" v-if="isAdmin && statSpan === -1" @click="handleDelete(player)"></i>
                 </td>
-                <td>{{player.room[0].guesses.length}}</td> 
-                <td>{{calculateMeanScore(player) === 7 ? 'yok' : calculateMeanScore(player)}}</td> 
-                <td>%{{calculateSuccess(player)}}</td>
-                <td>{{calculateSpeed(player) === 0 ? 'yok' : calculateSpeed(player) + 's'}}</td>    
+                <td v-if="statSpan !== 1">{{player.room[0].guesses.length}}</td> 
+                <td>{{calculateMeanScore(player) === 7 ? '❌' : calculateMeanScore(player)}}</td> 
+                <td v-if="statSpan !== 1">%{{calculateSuccess(player)}}</td>
+                <td v-if="statSpan === 1">{{calculateSuccess(player) === 100 ? '👍' : '❌'}}</td>
+                <td>{{calculateSpeed(player) === 0 ? '❌' : calculateSpeed(player) + 's'}}</td>    
                 </tr>            
             </tbody>
           </table>
