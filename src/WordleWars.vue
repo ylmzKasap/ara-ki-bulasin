@@ -36,8 +36,7 @@ const room_id = params.get('room');
 
 const maxUsernameLength = 40;
 const savedUsername = localStorage.getItem('username') || '';
-const serverPath = import.meta.env.SERVER_URL;
-const serverUrl = import.meta.env.MODE === 'production' ? serverPath : '/api'
+const serverUrl = import.meta.env.MODE === 'production' ? import.meta.env.SERVER_URL : '/api'
 
 let gameState: GameState = $ref(GameState.CONNECTING)
 let username = $ref(savedUsername.length <= maxUsernameLength ? savedUsername : '')
