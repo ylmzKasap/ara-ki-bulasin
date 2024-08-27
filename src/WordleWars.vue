@@ -36,7 +36,7 @@ const room_id = params.get('room');
 
 const maxUsernameLength = 40;
 const savedUsername = localStorage.getItem('username') || '';
-const serverUrl = import.meta.env.MODE === 'production' ? 'https://server.arakibulasın.com' : '/api'
+const serverUrl = import.meta.env.MODE === 'production' ? 'https://server.vocablitz.com' : '/api'
 
 let gameState: GameState = $ref(GameState.CONNECTING)
 let username = $ref(savedUsername.length <= maxUsernameLength ? savedUsername : '')
