@@ -1341,7 +1341,7 @@ h2 {
 }
 
 .dark #player-stats-row:nth-child(even)>.point-row {
-  background-color: #4f4f4f;
+  background-color: #585858;
 }
 
 .dark #player-stats-row:nth-child(odd) {
@@ -1349,7 +1349,7 @@ h2 {
 }
 
 .dark #player-stats-row:nth-child(odd)>.point-row {
-  background-color: #5b5b5b;
+  background-color: #636363;
 }
 
 .dark #player-stats-row > td {
@@ -1394,7 +1394,7 @@ h2 {
 }
 
 .this-is-your-row >.point-row {
-  background-color: rgb(129, 240, 137) !important;
+  background-color: rgb(123, 231, 130) !important;
 }
 
 .dark .this-is-your-row {
@@ -1402,7 +1402,7 @@ h2 {
 }
 
 .dark  .this-is-your-row >.point-row {
-  background-color: rgb(7, 168, 79) !important;
+  background-color: rgb(7, 156, 74) !important;
 }
 
 .cheater-label {
@@ -1414,8 +1414,8 @@ h2 {
   background-color: rgb(189, 189, 2) !important;
 }
 
-.selected-plater > .point-row {
-  background-color: rgb(189, 189, 2) !important;
+.selected-player > .point-row {
+  background-color: rgba(189, 189, 2, 0.907) !important;
 }
 
 #room-stats-header {
@@ -1438,7 +1438,7 @@ h2 {
 }
 
 .dark .table-header.points {
-  background-color: rgb(36 109 80);
+  background-color: rgb(39, 118, 86);
 }
 
 .confetti-wrapper {
