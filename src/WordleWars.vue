@@ -894,7 +894,7 @@ async function login(reset=false) {
                 <th class="table-header">İsim</th>
                 <th class="table-header" v-if="statSpan !== 1">Oyun sayısı</th>
                 <th class="table-header">{{statSpan === 1 ? "Tahmin" : "Ortalama tahmin"}}</th>
-                <th class="table-header" v-if="statSpan !== -1">{{statSpan === 1 ? "Buldu" : "Başarı oranı"}}</th>
+                <th class="table-header" v-if="statSpan === 1">Buldu</th>
                 <th class="table-header">Hız</th>
                 <th class="table-header points" v-if="statSpan === -1">Puan</th>
               </tr>
@@ -926,7 +926,6 @@ async function login(reset=false) {
                 </td>
                 <td v-if="statSpan !== 1">{{player.room[0].guesses.length}}</td> 
                 <td>{{renderPlayerScore(player)}}</td> 
-                <td v-if="statSpan === 7">%{{renderSuccessScore(player)}}</td>
                 <td v-if="statSpan === 1">{{renderSuccessScore(player) === 100 ? '👍' : '❌'}}</td>
                 <td>{{calculateSpeed(player) === 0 ? '❌' : calculateSpeed(player) + 's'}}</td>
                 <td class="point-row" v-if="statSpan === -1">{{handlePlayerScore(player)}}</td>       
