@@ -1393,7 +1393,15 @@ h2 {
   background-color: rgb(129, 240, 137) !important;
 }
 
+.this-is-your-row >.point-row {
+  background-color: rgb(129, 240, 137) !important;
+}
+
 .dark .this-is-your-row {
+  background-color: rgb(7, 168, 79) !important;
+}
+
+.dark  .this-is-your-row >.point-row {
   background-color: rgb(7, 168, 79) !important;
 }
 
@@ -1403,6 +1411,10 @@ h2 {
 }
 
 .selected-player {
+  background-color: rgb(189, 189, 2) !important;
+}
+
+.selected-plater > .point-row {
   background-color: rgb(189, 189, 2) !important;
 }
 
