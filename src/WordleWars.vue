@@ -16,6 +16,7 @@ import { sortUsers } from './lib/sortUsers'
 import messages from './lib/messages'
 import Header from './components/Header.vue'
 import { isMobile } from './lib/copyText'
+import calculatePlayerScore from './lib/calculatePlayerScore';
 
 /**
  * WORDLE WARS is a Wordle clone that allows for multiplayer gameplay. It works
@@ -472,7 +473,7 @@ function getGameStateMessage (gameState: string) {
 
 function scrollStats () {
   setTimeout(() => {
-    const buttonContainer = document.querySelector('#player-stats-row:first-of-type');
+    const buttonContainer = document.querySelector('#room-stats-table');
     buttonContainer?.scrollIntoView({behavior: "smooth", block: "start"});
   }, 200)
 }
@@ -571,7 +572,7 @@ function calculateMeanScore (player: Player) {
 
   const guessMean = guesses.length ? (guessSum + (cheatCount * 6)) / guesses.length  : 7;
 
-  return guessMean % 1 === 0 ? guessMean : guessMean.toFixed(2);  
+  return guessMean;  
 }
 
 function calculateSuccess (player: Player) {
@@ -601,7 +602,7 @@ function calculateSuccess (player: Player) {
   }
 
   const successRate = (answersFound / guesses.length) * 100;
-  return successRate % 1 === 0 ? successRate : successRate.toFixed(2); 
+  return successRate; 
 }
 
 function calculateSpeed (player: Player) {
@@ -621,7 +622,7 @@ function calculateSpeed (player: Player) {
     }
 
     if (guess.speed) {
-      totalSpeed += Number(guess.speed);
+      totalSpeed += Number(guess.speed) > 300 ? 300 : Number(guess.speed);
       validGames += 1;
     }
   }
@@ -632,6 +633,15 @@ function calculateSpeed (player: Player) {
 
   const speedRate = totalSpeed / validGames;
   return speedRate % 1 === 0 ? speedRate : Math.round(speedRate); 
+}
+
+function handlePlayerScore(player: Player) {
+  const playerGames = player.room[0].guesses.length;
+  const guessScore = calculateMeanScore(player);
+  const successScore = calculateSuccess(player);
+  const speedScore = calculateSpeed(player);
+  
+  return calculatePlayerScore(playerGames, guessScore, successScore, speedScore);
 }
 
 function getPlayersInRange (players: Player[]): any[] {
@@ -652,24 +662,52 @@ function getPlayersInRange (players: Player[]): any[] {
   return filteredPlayers; 
 }
 
+function renderPlayerScore(player: Player) {
+  const playerScore = calculateMeanScore(player);
+  return playerScore === 7 ? '❌' : playerScore % 1 === 0 ? playerScore : playerScore.toFixed(2) 
+}
+
+function renderSuccessScore(player: Player) {
+  const successScore = calculateSuccess(player);
+  return successScore % 1 === 0 ? successScore : successScore.toFixed(2);
+}
+
 function sortPlayers (players: Player[]) {
   let playersRaw = isProxy(players) ? toRaw(players) : players;
 
   return playersRaw.sort((a, b) => {
     if (cheater_ids.includes(a._id) && statSpan === 1) return 1
-    if (calculateMeanScore(a) < calculateMeanScore(b)) {
+    const aScore = calculateMeanScore(a);
+    const bScore = calculateMeanScore(b);
+    const aSuccess = calculateSuccess(a);
+    const bSuccess = calculateSuccess(b);
+    const aSpeed = calculateSpeed(a);
+    const bSpeed = calculateSpeed(b);
+    const aGames = a.room[0].guesses.length;
+    const bGames = b.room[0].guesses.length;
+    const aPoints = calculatePlayerScore(aGames, aScore, aSuccess, aSpeed);
+    const bPoints = calculatePlayerScore(bGames, bScore, bSuccess, bSpeed);
+
+    if (statSpan === -1) {
+     if (bPoints < aPoints) {
       return -1;
-    } else if (calculateMeanScore(a) > calculateMeanScore(b)) {
+    } else if (bPoints > aPoints) {
+      return 1;
+    } 
+    }
+    if (aScore < bScore) {
+      return -1;
+    } else if (aScore > bScore) {
       return 1;
     }
-    if (calculateSuccess(a) < calculateSuccess(b)) {
+    if (aSuccess < bSuccess) {
       return 1;
-    } else if (calculateSuccess(a) > calculateSuccess(b)) {
+    } else if (aSuccess > bSuccess) {
       return -1;
     }
-    if (calculateSpeed(a) < calculateSpeed(b)) {
+    if (aSpeed < bSpeed) {
       return -1;
-    } else if (calculateSpeed(a) > calculateSpeed(b)) {
+    } else if (aSpeed > bSpeed) {
       return 1;
     }
     return 0;
@@ -856,8 +894,9 @@ async function login(reset=false) {
                 <th class="table-header">İsim</th>
                 <th class="table-header" v-if="statSpan !== 1">Oyun sayısı</th>
                 <th class="table-header">{{statSpan === 1 ? "Tahmin" : "Ortalama tahmin"}}</th>
-                <th class="table-header">{{statSpan === 1 ? "Buldu" : "Başarı oranı"}}</th>
+                <th class="table-header" v-if="statSpan !== -1">{{statSpan === 1 ? "Buldu" : "Başarı oranı"}}</th>
                 <th class="table-header">Hız</th>
+                <th class="table-header points" v-if="statSpan === -1">Puan</th>
               </tr>
             </thead>
             <tbody>
@@ -886,10 +925,11 @@ async function login(reset=false) {
                   <i class="fa-solid fa-trash" v-if="isAdmin && statSpan === -1" @click="handleDelete(player)"></i>
                 </td>
                 <td v-if="statSpan !== 1">{{player.room[0].guesses.length}}</td> 
-                <td>{{calculateMeanScore(player) === 7 ? '❌' : calculateMeanScore(player)}}</td> 
-                <td v-if="statSpan !== 1">%{{calculateSuccess(player)}}</td>
-                <td v-if="statSpan === 1">{{calculateSuccess(player) === 100 ? '👍' : '❌'}}</td>
-                <td>{{calculateSpeed(player) === 0 ? '❌' : calculateSpeed(player) + 's'}}</td>    
+                <td>{{renderPlayerScore(player)}}</td> 
+                <td v-if="statSpan === 7">%{{renderSuccessScore(player)}}</td>
+                <td v-if="statSpan === 1">{{renderSuccessScore(player) === 100 ? '👍' : '❌'}}</td>
+                <td>{{calculateSpeed(player) === 0 ? '❌' : calculateSpeed(player) + 's'}}</td>
+                <td class="point-row" v-if="statSpan === -1">{{handlePlayerScore(player)}}</td>       
                 </tr>            
             </tbody>
           </table>
@@ -1284,21 +1324,36 @@ h2 {
   background-color: #eff5f0;
 }
 
+#player-stats-row:nth-child(odd) {
+  background-color: #fafafa;
+}
+
+#player-stats-row:nth-child(even)>.point-row {
+  background-color: #dfe4e0;
+}
+
+#player-stats-row:nth-child(odd)>.point-row {
+  background-color: #ebebeb;
+}
+
 .dark #player-stats-row:nth-child(even) {
   background-color: #5d5d5d;
+}
+
+.dark #player-stats-row:nth-child(even)>.point-row {
+  background-color: #4f4f4f;
 }
 
 .dark #player-stats-row:nth-child(odd) {
   background-color: #6b6b6b;
 }
 
-.dark #player-stats-row > td {
-  color: white;
+.dark #player-stats-row:nth-child(odd)>.point-row {
+  background-color: #5b5b5b;
 }
 
-
-#player-stats-row:nth-child(odd) {
-  background-color: #fafafa;
+.dark #player-stats-row > td {
+  color: white;
 }
 
 #player-stats-row >:nth-child(1) {
@@ -1364,6 +1419,14 @@ h2 {
 
 .dark .table-header {
   background-color: rgb(19, 131, 87);
+}
+
+.table-header.points {
+  background-color: rgb(43 165 116);
+}
+
+.dark .table-header.points {
+  background-color: rgb(36 109 80);
 }
 
 .confetti-wrapper {
