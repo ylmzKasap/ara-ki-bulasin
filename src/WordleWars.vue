@@ -622,7 +622,7 @@ function calculateSpeed (player: Player) {
     }
 
     if (guess.speed) {
-      totalSpeed += Number(guess.speed) > 300 ? 300 : Number(guess.speed);
+      totalSpeed += Number(guess.speed) > 500 ? 500 : Number(guess.speed);
       validGames += 1;
     }
   }
@@ -670,6 +670,13 @@ function renderPlayerScore(player: Player) {
 function renderSuccessScore(player: Player) {
   const successScore = calculateSuccess(player);
   return successScore % 1 === 0 ? successScore : successScore.toFixed(2);
+}
+
+function renderPlayerSpeed(player: Player) {
+  const playerSpeed = calculateSpeed(player);
+  if (playerSpeed === 0) return '❌';
+  if (playerSpeed >= 500) return `${playerSpeed}+ s`
+  return `${playerSpeed}s`;
 }
 
 function sortPlayers (players: Player[]) {
@@ -927,7 +934,7 @@ async function login(reset=false) {
                 <td v-if="statSpan !== 1">{{player.room[0].guesses.length}}</td> 
                 <td>{{renderPlayerScore(player)}}</td> 
                 <td v-if="statSpan === 1">{{renderSuccessScore(player) === 100 ? '👍' : '❌'}}</td>
-                <td>{{calculateSpeed(player) === 0 ? '❌' : calculateSpeed(player) + 's'}}</td>
+                <td>{{renderPlayerSpeed(player)}}</td>
                 <td class="point-row" v-if="statSpan === -1">{{handlePlayerScore(player)}}</td>       
                 </tr>            
             </tbody>
@@ -1394,6 +1401,14 @@ h2 {
 
 .this-is-your-row >.point-row {
   background-color: rgb(123, 231, 130) !important;
+}
+
+#player-stats-row.cheater>.point-row {
+  background-color: rgb(239, 209, 209) !important ;
+}
+
+.dark #player-stats-row.cheater>.point-row {
+  background-color: rgb(126, 13, 13) !important ;
 }
 
 .dark .this-is-your-row {
