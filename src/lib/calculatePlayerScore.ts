@@ -10,9 +10,9 @@ export default function calculatePlayerScore(gamesPlayed: number, guessScore: nu
   const speedScoreNormalized = (maxSpeedScore - speedScore) / maxSpeedScore;
   
   // Weight factors (can be adjusted for tuning)
-  const guessWeight = 0.65;
-  const successWeight = 0.2;
-  const speedWeight = 0.15;
+  const guessWeight = 0.70;
+  const successWeight = 0.14;
+  const speedWeight = 0.16;
 
   // Base score calculation with weighted components
   let baseScore = (guessScoreNormalized * guessWeight) +
@@ -22,7 +22,7 @@ export default function calculatePlayerScore(gamesPlayed: number, guessScore: nu
   // Games played adjustment
   // Early games boost, but diminishes with more games played
   // Ensure players with fewer games have a harder time reaching the top
-  const maxGamesImpact = 100; // Max impact cap
+  const maxGamesImpact = 120; // Max impact cap
   const logScale = Math.min(Math.log10(gamesPlayed + 1) / 2, Math.log10(maxGamesImpact) / 2);
 
   // Inverse proportional factor to penalize players with low games
