@@ -354,6 +354,10 @@ async function onSendScores ({success}: SendScoreProps) {
     }
     updateMyPresence(updatedPresence)
     savedScores.value()!.push(myPresence.value as OtherUser)
+    if (othersPresence.length === 0 || othersPresence.every(p => p && p.stage !== 'playing')) {
+      setTimeout(() => updateGameStage(GameState.SCORES), 3000);
+    }
+
 
     await axios.put(`${serverUrl}/player/guess`, {
     private_id: localStorage.getItem('private_id'),
