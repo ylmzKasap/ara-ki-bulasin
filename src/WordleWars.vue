@@ -636,7 +636,7 @@ function calculateSpeed (player: Player) {
   }
 
   const speedRate = totalSpeed / validGames;
-  return speedRate % 1 === 0 ? speedRate : Math.round(speedRate); 
+  return speedRate % 1 === 0 ? speedRate : speedRate; 
 }
 
 function handlePlayerScore(player: Player) {
@@ -680,7 +680,7 @@ function renderPlayerSpeed(player: Player) {
   const playerSpeed = calculateSpeed(player);
   if (playerSpeed === 0) return '❌';
   if (playerSpeed >= 500) return `${playerSpeed}+ s`
-  return `${playerSpeed}s`;
+  return `${Math.round(playerSpeed)}s`;
 }
 
 function sortPlayers (players: Player[]) {
