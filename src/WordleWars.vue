@@ -699,7 +699,7 @@ function sortPlayers (players: Player[]) {
     const aPoints = calculatePlayerScore(aGames, aScore, aSuccess, aSpeed);
     const bPoints = calculatePlayerScore(bGames, bScore, bSuccess, bSpeed);
 
-    if (statSpan === -1) {
+    if (statSpan === -1 || statSpan === 7) {
      if (bPoints < aPoints) {
       return -1;
     } else if (bPoints > aPoints) {
@@ -907,7 +907,7 @@ async function login(reset=false) {
                 <th class="table-header">{{statSpan === 1 ? "Tahmin" : "Ortalama tahmin"}}</th>
                 <th class="table-header" v-if="statSpan === 1">Buldu</th>
                 <th class="table-header">Hız</th>
-                <th class="table-header points" v-if="statSpan === -1">Puan</th>
+                <th class="table-header points" v-if="statSpan === -1 || statSpan === 7">Puan</th>
               </tr>
             </thead>
             <tbody>
@@ -939,7 +939,7 @@ async function login(reset=false) {
                 <td>{{renderPlayerScore(player)}}</td> 
                 <td v-if="statSpan === 1">{{renderSuccessScore(player) === 100 ? '👍' : '❌'}}</td>
                 <td>{{renderPlayerSpeed(player)}}</td>
-                <td class="point-row" v-if="statSpan === -1">{{handlePlayerScore(player)}}</td>       
+                <td class="point-row" v-if="statSpan === -1 || statSpan === 7">{{handlePlayerScore(player)}}</td>       
                 </tr>            
             </tbody>
           </table>
