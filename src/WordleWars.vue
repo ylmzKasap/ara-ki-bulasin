@@ -645,7 +645,7 @@ function handlePlayerScore(player: Player) {
   const successScore = calculateSuccess(player);
   const speedScore = calculateSpeed(player);
   
-  return calculatePlayerScore(playerGames, guessScore, successScore, speedScore);
+  return calculatePlayerScore(playerGames, guessScore, successScore, speedScore, statSpan);
 }
 
 function getPlayersInRange (players: Player[]): any[] {
@@ -696,8 +696,8 @@ function sortPlayers (players: Player[]) {
     const bSpeed = calculateSpeed(b);
     const aGames = a.room[0].guesses.length;
     const bGames = b.room[0].guesses.length;
-    const aPoints = calculatePlayerScore(aGames, aScore, aSuccess, aSpeed);
-    const bPoints = calculatePlayerScore(bGames, bScore, bSuccess, bSpeed);
+    const aPoints = calculatePlayerScore(aGames, aScore, aSuccess, aSpeed, statSpan);
+    const bPoints = calculatePlayerScore(bGames, bScore, bSuccess, bSpeed, statSpan);
 
     if (statSpan === -1 || statSpan === 7) {
      if (bPoints < aPoints) {

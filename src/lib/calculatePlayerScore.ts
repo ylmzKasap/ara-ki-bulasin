@@ -1,4 +1,5 @@
-export default function calculatePlayerScore(gamesPlayed: number, guessScore: number, successRatio: number, speedScore: number) {
+export default function calculatePlayerScore(
+  gamesPlayed: number, guessScore: number, successRatio: number, speedScore: number, statSpan: number) {
   // Normalize guessScore (1-6) to a score between 0 and 1, where lower guessScore gives a higher normalized score
   const guessScoreNormalized = (6 - guessScore) / 5;
 
@@ -22,11 +23,11 @@ export default function calculatePlayerScore(gamesPlayed: number, guessScore: nu
   // Games played adjustment
   // Early games boost, but diminishes with more games played
   // Ensure players with fewer games have a harder time reaching the top
-  const maxGamesImpact = 120; // Max impact cap
+  const maxGamesImpact = statSpan === -1 ? 120 : 3; // Max impact cap
   const logScale = Math.min(Math.log10(gamesPlayed + 1) / 2, Math.log10(maxGamesImpact) / 2);
 
   // Inverse proportional factor to penalize players with low games
-  const inverseGamePenalty = Math.min(1, gamesPlayed / 10);  // Reduces score for low game count, normalized up to 10 games
+  const inverseGamePenalty = Math.min(1, gamesPlayed / (statSpan === -1 ? 10 : 3));  // Reduces score for low game count, normalized up to 10 games
 
   // Final score, influenced by both base score and game factor with penalty
   let finalScore = baseScore * logScale * inverseGamePenalty;
