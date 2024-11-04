@@ -70,7 +70,8 @@ async function merge_accounts () {
   try {
     formError = "";
     merging = true;
-    const mergeResponse = await axios.put('https://server.arakibulasın.com/player/merge', {
+    const serverUrl = import.meta.env.MODE === 'production' ? 'https://server.vocablitz.com' : '/api'
+    const mergeResponse = await axios.put(`${serverUrl}/player/merge`, {
     private_id_to_merge: otherAccountId,
     private_id_to_be_merged: privateId
   })
