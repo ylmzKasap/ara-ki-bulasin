@@ -3,7 +3,6 @@ import { LetterState, OtherUser } from '../types'
 
 export function sortUsers (arr: OtherUser[]) {
   return arr.sort((a: OtherUser, b: OtherUser) => {
-    console.log(a);
     if (!b.score || b.cheat) {
       return -1
     }
