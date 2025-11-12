@@ -7,8 +7,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@liveblocks/client": "^0.14.0",
     "axios": "^1.1.3",
+    "@liveblocks/client": "^1.8.1",
     "vue": "^3.2.25",
     "vue-confetti-explosion": "^1.0.1"
   },
